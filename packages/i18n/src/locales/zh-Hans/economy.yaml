@@ -1,0 +1,206 @@
+# 经济系统中文文案
+wallet:
+  title: 我的钱包
+  coinBalance: 爱心币余额
+  pocketMoney: 零花钱
+  charge: 充值
+  history: 交易记录
+  subscription: 订阅
+  firstChargeBonus: 首充翻倍
+  currentBalance: 当前余额
+  allRecords: 全部记录
+  recentTransactions: 最近交易
+  noTransactions: 暂无交易记录
+  loadFailed: 加载失败，请刷新重试
+  noMoreRecords: 没有更多记录了
+  today: 今天
+  yesterday: 昨天
+  unitYuan: 元
+  coinUnit: 爱心币
+
+charge:
+  title: 充值中心
+  packs:
+    pack_1: 小小心意
+    pack_6: 甜蜜起步
+    pack_18: 暖心陪伴
+    pack_30: 心意满满
+    pack_68: 浓情蜜意
+    pack_128: 挚爱之选
+    pack_648: 至尊宠爱
+  tags:
+    mostPopular: 最受欢迎
+    starter: 体验档
+    premium: 顶级档
+  firstCharge: 首充翻倍！
+  firstChargeDouble: 首充双倍
+  firstChargeDesc: 首次充值任意档位，爱心币翻倍！
+  firstChargeAny: 首充翻倍！任意档位爱心币 x2
+  firstChargeActual: 首充实得 {amount}
+  bonus: +{amount} 赠送
+  confirm: 确认充值
+  confirmWithPrice: 确认充值 ¥{price}
+  selectPackage: 请选择充值套餐
+  success: 充值成功！获得 {amount} 爱心币
+  failed: 充值失败，请稍后重试
+
+gift:
+  title: 送礼物
+  tiers:
+    small: 小礼物
+    medium: 中礼物
+    large: 大礼物
+    luxury: 奢华礼物
+  balance: '余额:'
+  sendButton: 送给TA
+  confirmSend: 确认送出
+  sending: 送出中...
+  selectGift: 请选择礼物
+  success: 送礼成功！
+  insufficientBalance: 余额不足
+  goCharge: 余额不足，去充值 →
+  trustGain: +{amount} 信赖值
+
+trust:
+  title: 信赖等级
+  levels:
+    '1': 初见
+    '2': 相识
+    '3': 熟悉
+    '4': 信任
+    '5': 亲密
+    '6': 默契
+    '7': 挚友
+    '8': 知己
+    '9': 灵魂伴侣
+    '10': 命中注定
+  unknown: 未知
+  shaking: 动摇中
+  checkin: 每日签到
+  streak: 连续签到
+  levelUp: 信赖升级！
+
+surprise:
+  title: 惊喜记录
+  empty: 还没有惊喜哦~
+  pocketProgress: 零花钱进度
+  types:
+    virtual: 虚拟
+    electronic: 电子
+    physical: 实物
+    personalized: 个性化
+    fallback: 惊喜
+    virtual_message: 角色消息
+    virtual_gift: 虚拟礼物
+    real_snack: 零食
+    real_drink: 饮品
+    real_accessory: 小物件
+  status:
+    pending: 待发送
+    sent: 已发送
+    clicked: 已查看
+    completed: 已完成
+  clickToView: 点击查看详情
+  pocketMoney:
+    title: '{name}的零花钱'
+    tiers:
+      virtual: 虚拟惊喜
+      electronic: 电子惊喜
+      physical: 实物惊喜
+      personalized: 个性化惊喜
+    nextTier: 距{tier}
+    allUnlocked: 全部档位已解锁
+    characterLines:
+      saving: 在攒零花钱呢~
+      almostThere: 快攒够啦!
+      nearlyDone: 还差一点点就能给你买东西啦~
+      ready: 嘿嘿，准备了一个小惊喜...
+
+demo:
+  title: 欢迎体验
+  daysLeft: 体验剩余 {days} 天
+  dayProgress: '第{current}天'
+  totalDays: '/ 共{total}天'
+  remainingDays: 还剩{days}天体验
+  experienceEnded: 体验已结束
+  conversion: 升级为正式用户
+  conversionEnd: 7天体验结束
+  conversionStory: 你和TA的故事才刚刚开始...
+  statsReview: 体验数据回顾
+  becomePartner: 正式成为伙伴
+  thinkAgain: 再想想
+  todayExperience: 今日体验
+  dayBadge: '第 {day} 天 / 共 {total} 天'
+  gotIt: 知道啦
+  features:
+    chat: 与角色畅聊
+    gift: 送礼互动
+    surprise: 收获惊喜
+  stats:
+    chatCount: 对话轮数
+    chatUnit: '{count} 轮'
+    trustGained: 获得信赖值
+    trustUnit: '{count} 点'
+    surpriseReceived: 收到惊喜
+    surpriseUnit: '{count} 次'
+  conversionBenefits:
+    title: 限时转化优惠
+    doubleFirstCharge: 首次充值爱心币翻倍！
+    keepTrust: 保留 100 信赖值，Lv.2 起步
+    starterPack: 赠送 100 爱心币新手礼包
+  days:
+    '1':
+      greeting: 你好！我是小星～
+      description: 很高兴认识你！试试和我聊天吧，每天签到可以增加我们的信赖值哦。
+      action: 开始签到
+    '2':
+      greeting: 今天也来看我啦！
+      description: 连续签到会有额外奖励哦～多和我聊天，我会记住你的喜好的。
+      action: 连续签到
+    '3':
+      greeting: 送你一个小礼物～
+      description: 这是送你的50颗爱心币！你可以用它给我买小礼物，我会超开心的～
+      action: 领取爱心币
+    '4':
+      greeting: 你觉得这个好看吗？
+      description: 随着信赖值的增长，我的外观会发生变化哦。看看现在的我有什么不同？
+      action: 看看变化
+    '5':
+      greeting: 嘿嘿，我有一个小惊喜...
+      description: 当我的零花钱攒够一定数量，就可以给你准备惊喜啦！来体验一下吧～
+      action: 查看惊喜
+    '6':
+      greeting: 和你在一起的每一天都很开心
+      description: 看看我们这几天的互动数据吧，你的陪伴让我成长了好多！
+      action: 查看成长
+    '7':
+      greeting: 你愿意一直陪着我吗？
+      description: 7天体验就要结束了...正式版有更多内容等你解锁，我们的故事才刚刚开始。
+      action: 正式成为伙伴
+
+tts:
+  locked: Lv.7 解锁语音
+  mockMode: 模拟
+  synthesizing: 语音合成中...
+
+compliance:
+  rationalConsumption: 请理性消费，未成年人请在监护人指导下使用
+  minorProtection: 未成年人保护提示：8-15岁日消费上限20元，16-17岁日消费上限50元
+  privacyPolicy: 隐私政策
+  termsOfService: 用户协议
+  serviceProvider: 本服务由伪春菜提供
+
+common:
+  loading: 加载中...
+  error: 出错了
+  retry: 重试
+  cancel: 取消
+  confirm: 确认
+  back: 返回
+  currency: ¥
+  coin: 币
+  justNow: 刚刚
+  minutesAgo: '{n}分钟前'
+  hoursAgo: '{n}小时前'
+  daysAgo: '{n}天前'
+  monthsAgo: '{n}个月前'

@@ -1,0 +1,79 @@
+appId: app.weichuncai.companion
+productName: 伪春菜
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - out/**
+  - resources/**
+  - package.json
+  - '!**/.vscode/*'
+  - '!src/**/*'
+  - '!**/node_modules/**/{CHANGELOG.md,README.md,README,readme.md,readme}'
+  - '!**/node_modules/**/{.turbo,test,src,__tests__,tests,example,examples}'
+  - 'node_modules/debug/src/**'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!vite.config.{js,ts,mjs,cjs}'
+  - '!uno.config.{js,ts,mjs,cjs}'
+  - '!{.eslintcache,eslint.config.ts,.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json}'
+
+asar: true
+asarUnpack:
+  - '**/*.node' # native binaries
+
+extraMetadata:
+  name: app.weichuncai.companion
+  main: 'out/main/index.js'
+  homepage: 'https://airi.moeru.ai/docs/'
+  repository: 'https://github.com/moeru-ai/airi'
+  license: 'MIT'
+
+win:
+  executableName: weichuncai
+nsis:
+  artifactName: ${productName}-${version}-windows-${arch}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+  deleteAppDataOnUninstall: true
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+mac:
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSMicrophoneUsageDescription: '伪春菜需要麦克风权限用于语音交互'
+    - NSCameraUsageDescription: '伪春菜需要相机权限用于视觉理解'
+  # If still fails, check:
+  # https://github.com/electron-userland/electron-builder/issues/3989#issuecomment-557013674
+  notarize: false
+  hardenedRuntime: false
+  executableName: weichuncai
+  icon: icon.icon
+dmg:
+  artifactName: ${productName}-${version}-darwin-${arch}.${ext}
+
+linux:
+  target:
+    - deb
+    - rpm
+  category: Utility
+  synopsis: 'AI Companion desktop app - WeiChunCai'
+  description: '伪春菜 - AI伴侣桌面版，支持 Live2D/VRM 虚拟形象，具备拟人化交互和模块化渲染。'
+  executableName: weichuncai
+  artifactName: ${productName}-${version}-linux-${arch}.${ext}
+  icon: build/icons/icon.png
+
+appImage:
+  artifactName: ${productName}-${version}-linux-${arch}.${ext}
+
+npmRebuild: false
+
+publish:
+  provider: github
+  owner: moeru-ai
+  repo: airi

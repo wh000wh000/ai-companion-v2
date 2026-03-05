@@ -1,0 +1,110 @@
+import type { SurpriseService } from '../services/surprises'
+import type { HonoEnv } from '../types/hono'
+
+import { Hono } from 'hono'
+import { safeParse } from 'valibot'
+
+import { SurpriseCheckSchema, SurpriseQuerySchema, SurpriseStatusUpdateSchema } from '../api/surprises.schema'
+import { authGuard } from '../middlewares/auth'
+import { chargeRateLimiter, queryRateLimiter } from '../middlewares/rate-limit'
+import { createBadRequestError } from '../utils/error'
+
+/** 根据惊喜类型生成默认产品名称 */
+function getSurpriseProductName(type: string): string {
+  const names: Record<string, string> = {
+    virtual: '专属虚拟礼物',
+    electronic: '电子惊喜礼包',
+    physical: '实物惊喜礼品',
+    personalized: '个性化定制惊喜',
+  }
+  return names[type] ?? '神秘惊喜'
+}
+
+/** 根据惊喜类型生成角色消息 */
+function getSurpriseMessage(type: string): string {
+  const messages: Record<string, string> = {
+    virtual: '我给你准备了一个小惊喜，希望你喜欢~',
+    electronic: '攒了好久的零花钱，给你买了这个！',
+    physical: '这是我用零花钱给你准备的礼物哦~',
+    personalized: '这是我特别为你定制的，独一无二的！',
+  }
+  return messages[type] ?? '这是我给你准备的惊喜~'
+}
+
+export function createSurpriseRoutes(surpriseService: SurpriseService) {
+  return new Hono<HonoEnv>()
+    .use('*', authGuard)
+
+    // GET / — 查询惊喜记录
+    .get('/', queryRateLimiter, async (c) => {
+      const user = c.get('user')!
+      const query = {
+        limit: Number(c.req.query('limit') ?? 20),
+        offset: Number(c.req.query('offset') ?? 0),
+      }
+      const result = safeParse(SurpriseQuerySchema, query)
+
+      if (!result.success) {
+        throw createBadRequestError('Invalid Request', 'INVALID_REQUEST', result.issues)
+      }
+
+      const surprises = await surpriseService.getSurprises(
+        user.id,
+        result.output.limit!,
+        result.output.offset!,
+      )
+
+      return c.json(surprises)
+    })
+
+    // POST /check — 触发检查（触发成功时自动创建惊喜记录）
+    .post('/check', chargeRateLimiter, async (c) => {
+      const user = c.get('user')!
+      const body = await c.req.json()
+      const result = safeParse(SurpriseCheckSchema, body)
+
+      if (!result.success) {
+        throw createBadRequestError('Invalid Request', 'INVALID_REQUEST', result.issues)
+      }
+
+      const triggerResult = await surpriseService.checkTrigger(
+        user.id,
+        result.output.characterId,
+      )
+
+      // 触发成功时自动创建惊喜记录，使前端可以展示惊喜动画
+      if (triggerResult.shouldTrigger && triggerResult.bestType) {
+        const surprise = await surpriseService.createSurprise({
+          userId: user.id,
+          characterId: result.output.characterId,
+          type: triggerResult.bestType,
+          productName: getSurpriseProductName(triggerResult.bestType),
+          amount: 0, // 虚拟惊喜免费
+          status: 'sent',
+          message: getSurpriseMessage(triggerResult.bestType),
+        })
+        return c.json({ ...triggerResult, surprise })
+      }
+
+      return c.json({ ...triggerResult, surprise: null })
+    })
+
+    // PATCH /:id/status — 更新状态
+    .patch('/:id/status', chargeRateLimiter, async (c) => {
+      const id = c.req.param('id')
+      const body = await c.req.json()
+      const result = safeParse(SurpriseStatusUpdateSchema, body)
+
+      if (!result.success) {
+        throw createBadRequestError('Invalid Request', 'INVALID_REQUEST', result.issues)
+      }
+
+      const updated = await surpriseService.updateStatus(
+        id,
+        result.output.status,
+        result.output.feedback,
+      )
+
+      return c.json(updated)
+    })
+}

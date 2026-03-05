@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=伪春菜
+Exec=weichuncai %U
+Terminal=false
+Type=Application
+Icon=app.weichuncai.companion
+StartupWMClass=伪春菜
+Comment=伪春菜 - AI伴侣桌面版，支持 Live2D/VRM 虚拟形象，具备拟人化交互和模块化渲染。
+Categories=Utility;
+

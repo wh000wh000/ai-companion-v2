@@ -1,0 +1,54 @@
+{
+  "name": "@ai-companion/soul-engine",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Soul Economy Engine - Trust, Economy, Surprise, Demo systems",
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./trust": {
+      "types": "./dist/trust/calculator.d.mts",
+      "default": "./dist/trust/calculator.mjs"
+    },
+    "./economy": {
+      "types": "./dist/economy/engine.d.mts",
+      "default": "./dist/economy/engine.mjs"
+    },
+    "./surprise": {
+      "types": "./dist/surprise/engine.d.mts",
+      "default": "./dist/surprise/engine.mjs"
+    },
+    "./demo": {
+      "types": "./dist/demo/manager.d.mts",
+      "default": "./dist/demo/manager.mjs"
+    },
+    "./emotion": {
+      "types": "./dist/emotion/mapping.d.mts",
+      "default": "./dist/emotion/mapping.mjs"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.mts",
+      "default": "./dist/types/index.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsdown": "catalog:",
+    "vitest": "catalog:vitest"
+  }
+}

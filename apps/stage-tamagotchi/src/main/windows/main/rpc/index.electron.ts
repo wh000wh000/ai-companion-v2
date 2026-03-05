@@ -1,0 +1,44 @@
+import type { BrowserWindow } from 'electron'
+
+import type { ServerChannel } from '../../../services/airi/channel-server'
+import type { AutoUpdater } from '../../../services/electron/auto-updater'
+import type { NoticeWindowManager } from '../../notice'
+import type { WidgetsWindowManager } from '../../widgets'
+
+import { defineInvokeHandler } from '@moeru/eventa'
+import { createContext } from '@moeru/eventa/adapters/electron/main'
+import { ipcMain } from 'electron'
+
+import { electronOpenChat, electronOpenMainDevtools, electronOpenSettings, noticeWindowEventa } from '../../../../shared/eventa'
+import { createServerChannelService } from '../../../services/airi/channel-server'
+import { createWidgetsService } from '../../../services/airi/widgets'
+import { createAutoUpdaterService } from '../../../services/electron'
+import { toggleWindowShow } from '../../shared'
+import { setupBaseWindowElectronInvokes } from '../../shared/window'
+
+export function setupMainWindowElectronInvokes(params: {
+  window: BrowserWindow
+  settingsWindow: () => Promise<BrowserWindow>
+  chatWindow: () => Promise<BrowserWindow>
+  widgetsManager: WidgetsWindowManager
+  noticeWindow: NoticeWindowManager
+  autoUpdater: AutoUpdater
+  serverChannel: ServerChannel
+}) {
+  // TODO: once we refactored eventa to support window-namespaced contexts,
+  // we can remove the setMaxListeners call below since eventa will be able to dispatch and
+  // manage events within eventa's context system.
+  ipcMain.setMaxListeners(0)
+
+  const { context } = createContext(ipcMain, params.window)
+
+  setupBaseWindowElectronInvokes({ context, window: params.window })
+  createWidgetsService({ context, widgetsManager: params.widgetsManager, window: params.window })
+  createAutoUpdaterService({ context, window: params.window, service: params.autoUpdater })
+  createServerChannelService({ serverChannel: params.serverChannel })
+
+  defineInvokeHandler(context, electronOpenMainDevtools, () => params.window.webContents.openDevTools({ mode: 'detach' }))
+  defineInvokeHandler(context, electronOpenSettings, async () => toggleWindowShow(await params.settingsWindow()))
+  defineInvokeHandler(context, electronOpenChat, async () => toggleWindowShow(await params.chatWindow()))
+  defineInvokeHandler(context, noticeWindowEventa.openWindow, payload => params.noticeWindow.open(payload))
+}

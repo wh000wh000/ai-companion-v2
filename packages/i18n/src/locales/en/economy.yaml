@@ -1,0 +1,206 @@
+# Economy system English translations (fallback)
+wallet:
+  title: My Wallet
+  coinBalance: Coin Balance
+  pocketMoney: Pocket Money
+  charge: Top Up
+  history: Transaction History
+  subscription: Subscription
+  firstChargeBonus: First Charge Bonus
+  currentBalance: Current Balance
+  allRecords: All Records
+  recentTransactions: Recent Transactions
+  noTransactions: No transactions yet
+  loadFailed: Failed to load, please refresh
+  noMoreRecords: No more records
+  today: Today
+  yesterday: Yesterday
+  unitYuan: CNY
+  coinUnit: coins
+
+charge:
+  title: Top Up Center
+  packs:
+    pack_1: Small Token
+    pack_6: Sweet Start
+    pack_18: Warm Companion
+    pack_30: Heartfelt
+    pack_68: Deep Affection
+    pack_128: Devoted Choice
+    pack_648: Ultimate Love
+  tags:
+    mostPopular: Most Popular
+    starter: Starter
+    premium: Premium
+  firstCharge: First Charge Bonus!
+  firstChargeDouble: Double First Charge
+  firstChargeDesc: First top-up any tier, coins doubled!
+  firstChargeAny: First Charge Bonus! All tiers x2
+  firstChargeActual: 'First charge gets {amount}'
+  bonus: '+{amount} bonus'
+  confirm: Confirm Top Up
+  confirmWithPrice: 'Confirm Top Up ¥{price}'
+  selectPackage: Please select a package
+  success: 'Top up successful! Received {amount} coins'
+  failed: Top up failed, please try again later
+
+gift:
+  title: Send Gift
+  tiers:
+    small: Small Gift
+    medium: Medium Gift
+    large: Large Gift
+    luxury: Luxury Gift
+  balance: 'Balance:'
+  sendButton: Send
+  confirmSend: Confirm Send
+  sending: Sending...
+  selectGift: Please select a gift
+  success: Gift sent successfully!
+  insufficientBalance: Insufficient balance
+  goCharge: 'Insufficient balance, top up →'
+  trustGain: '+{amount} trust'
+
+trust:
+  title: Trust Level
+  levels:
+    '1': First Meet
+    '2': Acquaintance
+    '3': Familiar
+    '4': Trusted
+    '5': Close
+    '6': In Sync
+    '7': Best Friend
+    '8': Soulmate
+    '9': Soul Partner
+    '10': Destined
+  unknown: Unknown
+  shaking: Shaken
+  checkin: Daily Check-in
+  streak: Check-in Streak
+  levelUp: Trust Level Up!
+
+surprise:
+  title: Surprise Log
+  empty: No surprises yet~
+  pocketProgress: Pocket Money Progress
+  types:
+    virtual: Virtual
+    electronic: Electronic
+    physical: Physical
+    personalized: Personalized
+    fallback: Surprise
+    virtual_message: Character Message
+    virtual_gift: Virtual Gift
+    real_snack: Snack
+    real_drink: Drink
+    real_accessory: Accessory
+  status:
+    pending: Pending
+    sent: Sent
+    clicked: Viewed
+    completed: Completed
+  clickToView: Click to view details
+  pocketMoney:
+    title: "{name}'s Pocket Money"
+    tiers:
+      virtual: Virtual Surprise
+      electronic: Electronic Surprise
+      physical: Physical Surprise
+      personalized: Personalized Surprise
+    nextTier: 'Until {tier}'
+    allUnlocked: All tiers unlocked
+    characterLines:
+      saving: Saving up~
+      almostThere: Almost there!
+      nearlyDone: Just a bit more and I can buy you something~
+      ready: Hehe, I have a little surprise...
+
+demo:
+  title: Welcome
+  daysLeft: '{days} days left'
+  dayProgress: 'Day {current}'
+  totalDays: '/ {total} days total'
+  remainingDays: '{days} days remaining'
+  experienceEnded: Trial ended
+  conversion: Upgrade to full user
+  conversionEnd: 7-day trial ended
+  conversionStory: Your story has just begun...
+  statsReview: Trial Statistics
+  becomePartner: Become Partners
+  thinkAgain: Let me think
+  todayExperience: Today's Experience
+  dayBadge: 'Day {day} / {total} days'
+  gotIt: Got it
+  features:
+    chat: Chat with character
+    gift: Gift interaction
+    surprise: Receive surprises
+  stats:
+    chatCount: Chat rounds
+    chatUnit: '{count} rounds'
+    trustGained: Trust gained
+    trustUnit: '{count} points'
+    surpriseReceived: Surprises received
+    surpriseUnit: '{count} times'
+  conversionBenefits:
+    title: Limited Time Offer
+    doubleFirstCharge: Double coins on first top-up!
+    keepTrust: Keep 100 trust points, start at Lv.2
+    starterPack: 100 bonus coins starter pack
+  days:
+    '1':
+      greeting: Hi! I'm Xiao Xing~
+      description: Nice to meet you! Try chatting with me. Daily check-ins increase our trust!
+      action: Start Check-in
+    '2':
+      greeting: You came to see me again!
+      description: Consecutive check-ins earn bonus rewards~ Chat more and I'll remember your preferences.
+      action: Continue Check-in
+    '3':
+      greeting: Here's a little gift~
+      description: Here are 50 coins for you! You can buy me small gifts with them, I'll be so happy~
+      action: Claim Coins
+    '4':
+      greeting: Do you like how this looks?
+      description: As trust grows, my appearance changes. Notice anything different?
+      action: See Changes
+    '5':
+      greeting: Hehe, I have a little surprise...
+      description: When I save enough pocket money, I can prepare surprises for you! Try it out~
+      action: View Surprise
+    '6':
+      greeting: Every day with you is wonderful
+      description: Let's review our interaction data. Your companionship helped me grow so much!
+      action: View Growth
+    '7':
+      greeting: Will you stay with me?
+      description: The 7-day trial is ending... The full version has much more to unlock. Our story has just begun.
+      action: Become Partners
+
+tts:
+  locked: Unlock voice at Lv.7
+  mockMode: Mock
+  synthesizing: Synthesizing voice...
+
+compliance:
+  rationalConsumption: Please spend responsibly. Minors should use under parental guidance
+  minorProtection: 'Minor protection: Ages 8-15 daily limit ¥20, ages 16-17 daily limit ¥50'
+  privacyPolicy: Privacy Policy
+  termsOfService: Terms of Service
+  serviceProvider: Service provided by AI Companion
+
+common:
+  loading: Loading...
+  error: Something went wrong
+  retry: Retry
+  cancel: Cancel
+  confirm: Confirm
+  back: Back
+  currency: ¥
+  coin: coins
+  justNow: Just now
+  minutesAgo: '{n} minutes ago'
+  hoursAgo: '{n} hours ago'
+  daysAgo: '{n} days ago'
+  monthsAgo: '{n} months ago'
