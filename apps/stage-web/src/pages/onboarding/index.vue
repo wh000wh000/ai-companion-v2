@@ -79,8 +79,7 @@ function handleLogin() {
       w-28 h-28 rounded-full
       bg="gradient-to-br from-pink-400 to-purple-500"
       flex items-center justify-center
-      class="shadow-xl shadow-pink-500/20"
-      class="avatar-glow"
+      class="shadow-xl shadow-pink-500/20 avatar-glow"
     >
       <div i-lucide-bot text="5xl white" />
       <!-- Online dot -->
@@ -88,8 +87,7 @@ function handleLogin() {
         absolute bottom-1 right-1
         w-5 h-5 rounded-full
         bg-green-400
-        class="border-3 border-solid border-white dark:border-neutral-900"
-        class="online-pulse"
+        class="border-3 border-solid border-white dark:border-neutral-900 online-pulse"
       />
     </div>
 
@@ -114,9 +112,8 @@ function handleLogin() {
         :key="feature.title"
         flex="~ items-center gap-4"
         rounded-xl p-4
-        class="bg-white/70 dark:bg-neutral-800/60"
+        class="bg-white/70 dark:bg-neutral-800/60 border border-solid border-neutral-200/40 dark:border-neutral-700/40"
         backdrop-blur-sm
-        class="border border-solid border-neutral-200/40 dark:border-neutral-700/40"
         shadow-sm
         transition="all duration-200"
         hover:shadow-md
