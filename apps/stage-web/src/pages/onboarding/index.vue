@@ -70,7 +70,7 @@ function handleLogin() {
 <template>
   <div
     min-h-100dvh flex="~ col items-center justify-center"
-    bg="gradient-to-b from-pink-50/80 via-white to-purple-50/60 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950"
+    class="bg-gradient-to-b from-pink-50/80 via-white to-purple-50/60 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950"
     px-6 py-10
   >
     <!-- Character Avatar -->
@@ -79,7 +79,7 @@ function handleLogin() {
       w-28 h-28 rounded-full
       bg="gradient-to-br from-pink-400 to-purple-500"
       flex items-center justify-center
-      shadow-xl shadow-pink-500/20
+      class="shadow-xl shadow-pink-500/20"
       class="avatar-glow"
     >
       <div i-lucide-bot text="5xl white" />
@@ -88,7 +88,7 @@ function handleLogin() {
         absolute bottom-1 right-1
         w-5 h-5 rounded-full
         bg-green-400
-        border="3 solid white dark:neutral-900"
+        class="border-3 border-solid border-white dark:border-neutral-900"
         class="online-pulse"
       />
     </div>
@@ -114,9 +114,9 @@ function handleLogin() {
         :key="feature.title"
         flex="~ items-center gap-4"
         rounded-xl p-4
-        bg="white/70 dark:neutral-800/60"
+        class="bg-white/70 dark:bg-neutral-800/60"
         backdrop-blur-sm
-        border="1 solid neutral-200/40 dark:neutral-700/40"
+        class="border border-solid border-neutral-200/40 dark:border-neutral-700/40"
         shadow-sm
         transition="all duration-200"
         hover:shadow-md
@@ -153,9 +153,8 @@ function handleLogin() {
       w-full max-w-sm rounded-xl py-3.5
       bg="gradient-to-r from-pink-500 to-purple-500"
       text="white lg" font-bold
-      shadow-lg shadow-pink-500/25
+      class="shadow-lg shadow-pink-500/25 hover:shadow-xl hover:shadow-pink-500/35"
       transition="all duration-200"
-      hover:shadow-xl hover:shadow-pink-500/35
       active:scale-98
       @click="handleStartDemo"
     >
