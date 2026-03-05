@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "corepack pnpm build --filter=@proj-airi/stage-web...",
+  "buildCommand": "corepack pnpm --filter=@proj-airi/stage-web run build",
   "installCommand": "corepack enable && corepack pnpm install --frozen-lockfile",
   "outputDirectory": "apps/stage-web/dist",
   "framework": "vite",
