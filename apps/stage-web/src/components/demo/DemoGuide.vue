@@ -117,7 +117,7 @@ function dismiss() {
       >
         <!-- Backdrop -->
         <div
-          absolute inset-0 bg="black/40"
+          absolute inset-0 class="bg-black/40"
           backdrop-blur-sm
           @click="dismiss"
         />
@@ -185,8 +185,7 @@ function dismiss() {
             <!-- Daily experience info -->
             <div
               mt-4 w-full rounded-lg p-3
-              bg="neutral-50/80 dark:neutral-800/60"
-              border="1 solid neutral-200/30 dark:neutral-700/30"
+              class="bg-neutral-50/80 dark:bg-neutral-800/60 border border-solid border-neutral-200/30 dark:border-neutral-700/30"
             >
               <div text="xs neutral-400 dark:neutral-500" mb-1>
                 今日体验
@@ -205,9 +204,9 @@ function dismiss() {
               w-full rounded-xl py-3
               bg="gradient-to-r from-pink-500 to-purple-500"
               text="white sm" font-bold
-              shadow="lg pink-500/20"
+              shadow="lg"
               transition="all duration-200"
-              class="hover:shadow-xl active:scale-98"
+              class="shadow-pink-500/20 hover:shadow-xl active:scale-98"
               @click="handleAction"
             >
               {{ dayContent.actionLabel }}
@@ -216,7 +215,7 @@ function dismiss() {
             <!-- Dismiss -->
             <button
               w-full rounded-xl py-2.5
-              bg="neutral-100/80 dark:neutral-800/80 hover:neutral-200/80 dark:hover:neutral-700/80"
+              class="bg-neutral-100/80 dark:bg-neutral-800/80 hover:bg-neutral-200/80 dark:hover:bg-neutral-700/80"
               text="sm neutral-600 dark:neutral-300"
               transition="all duration-200"
               @click="dismiss"

@@ -71,7 +71,7 @@ async function handleCharge() {
     <div flex="~ items-center gap-2">
       <button
         p-2.5 rounded-lg min-w-11 min-h-11
-        bg="transparent hover:neutral-100/50 dark:hover:neutral-800/50"
+        class="bg-transparent hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50"
         @click="router.back()"
       >
         <div i-lucide-arrow-left text="lg neutral-600 dark:neutral-300" />
@@ -83,8 +83,7 @@ async function handleCharge() {
     <div
       flex="~ items-center justify-between"
       rounded-xl p-4
-      bg="neutral-50/60 dark:neutral-800/50"
-      border="1 solid neutral-200/30 dark:neutral-700/30"
+      class="bg-neutral-50/60 dark:bg-neutral-800/50 border border-solid border-neutral-200/30 dark:border-neutral-700/30"
     >
       <div flex="~ items-center gap-2">
         <div i-lucide-heart text="pink-500" />
@@ -99,20 +98,19 @@ async function handleCharge() {
     <div
       v-if="wallet?.isFirstCharge"
       rounded-xl p-4
-      bg="gradient-to-r from-amber-500/15 to-orange-500/15 dark:from-amber-700/20 dark:to-orange-700/20"
-      border="1 solid amber-300/40 dark:amber-700/30"
+      class="bg-gradient-to-r from-amber-500/15 to-orange-500/15 dark:from-amber-700/20 dark:to-orange-700/20 border border-solid border-amber-300/40 dark:border-amber-700/30"
       flex="~ items-center gap-3"
     >
       <div
         flex items-center justify-center
         w-10 h-10 rounded-full
-        bg="amber-500/20"
+        class="bg-amber-500/20"
       >
         <div i-lucide-zap text="xl amber-500" />
       </div>
       <div flex="~ col">
         <span text="sm amber-700 dark:amber-200" font-bold>首充双倍</span>
-        <span text="xs amber-600/80 dark:amber-300/70">首次充值任意档位，爱心币翻倍！</span>
+        <span text="xs" class="text-amber-600/80 dark:text-amber-300/70">首次充值任意档位，爱心币翻倍！</span>
       </div>
     </div>
 

@@ -65,13 +65,11 @@ function toggleTrustBar() {
       <div
         v-if="showTrustBar && trustRecord"
         fixed z-50
-        class="bottom-20 right-4 md:bottom-24 md:right-6"
+        class="bottom-20 right-4 md:bottom-24 md:right-6 bg-white/90 dark:bg-neutral-900/90 border-neutral-200/40 dark:border-neutral-700/40"
         w="56 md:64"
-        bg="white/90 dark:neutral-900/90"
         backdrop-blur-md
         rounded-xl
         shadow-lg
-        border="neutral-200/40 dark:neutral-700/40"
         px-3 py-2.5
       >
         <TrustBar
@@ -94,10 +92,9 @@ function toggleTrustBar() {
         <div
           v-if="trustRecord"
           absolute z-1
-          class="-top-2 -left-3"
+          class="-top-2 -left-3 border border-solid border-neutral-200/60 dark:border-neutral-700/60"
           rounded-full px-1.5 py-0.5
           bg="white dark:neutral-800"
-          border="1 solid neutral-200/60 dark:neutral-700/60"
           shadow-sm
           text="xs neutral-600 dark:neutral-300"
           font-medium
@@ -106,9 +103,7 @@ function toggleTrustBar() {
           Lv.{{ trustRecord.trustLevel }}
         </div>
         <button
-          class="floating-btn"
-          border="2 solid neutral-100/60 dark:neutral-800/30"
-          bg="neutral-50/70 dark:neutral-800/70"
+          class="floating-btn border-2 border-solid border-neutral-100/60 dark:border-neutral-800/30 bg-neutral-50/70 dark:bg-neutral-800/70"
           w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-md
           shadow-md
           transition="all duration-200"
@@ -134,10 +129,9 @@ function toggleTrustBar() {
         <div
           v-if="walletStore.wallet"
           absolute z-1
-          class="-top-2 -left-3"
+          class="-top-2 -left-3 border border-solid border-neutral-200/60 dark:border-neutral-700/60"
           rounded-full px-1.5 py-0.5
           bg="white dark:neutral-800"
-          border="1 solid neutral-200/60 dark:neutral-700/60"
           shadow-sm
           text="xs neutral-600 dark:neutral-300"
           font-medium

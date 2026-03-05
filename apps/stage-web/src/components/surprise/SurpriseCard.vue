@@ -110,12 +110,11 @@ function handleClick() {
     flex="~ col gap-3"
     rounded-2xl p-4
     bg="white dark:neutral-900"
-    border="1 solid neutral-200/40 dark:neutral-700/40"
     shadow="sm"
     transition="all duration-200"
     hover="shadow-md"
     cursor-pointer
-    class="surprise-card"
+    class="surprise-card border border-solid border-neutral-200/40 dark:border-neutral-700/40"
     @click="handleClick"
   >
     <!-- Header: type + status + time -->
@@ -162,14 +161,12 @@ function handleClick() {
     <div
       v-if="surprise.message"
       relative rounded-xl p-3
-      bg="primary-50/60 dark:primary-900/20"
-      border="1 solid primary-200/30 dark:primary-700/30"
+      class="bg-primary-50/60 dark:bg-primary-900/20 border border-solid border-primary-200/30 dark:border-primary-700/30"
     >
       <div
         absolute top="-1.5" left-3
         w-3 h-3 rotate-45
-        bg="primary-50/60 dark:primary-900/20"
-        border="l t solid primary-200/30 dark:primary-700/30"
+        class="bg-primary-50/60 dark:bg-primary-900/20 border-l border-t border-solid border-primary-200/30 dark:border-primary-700/30"
       />
       <p text="sm neutral-600 dark:neutral-300" leading-relaxed>
         {{ surprise.message }}

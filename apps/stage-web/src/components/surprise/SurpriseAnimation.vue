@@ -97,7 +97,7 @@ function dismiss() {
         @click.self="dismiss"
       >
         <!-- Backdrop -->
-        <div absolute inset-0 bg="black/60" class="surprise-backdrop" />
+        <div absolute inset-0 class="surprise-backdrop bg-black/60" />
 
         <!-- Effect particles -->
         <div v-if="phase === 'reveal'" absolute inset-0 pointer-events-none :class="effectClass">
@@ -136,8 +136,8 @@ function dismiss() {
             </div>
             <span
               v-if="phase === 'open'"
-              text="sm white/80"
-              class="tap-hint"
+              text="sm"
+              class="tap-hint text-white/80"
             >
               点击打开
             </span>
@@ -168,8 +168,7 @@ function dismiss() {
               <!-- Character message -->
               <div
                 w-full rounded-xl p-4
-                bg="primary-50/60 dark:primary-900/20"
-                border="1 solid primary-200/30 dark:primary-700/30"
+                class="bg-primary-50/60 dark:bg-primary-900/20 border border-solid border-primary-200/30 dark:border-primary-700/30"
               >
                 <p text="sm neutral-600 dark:neutral-300" leading-relaxed text-center>
                   {{ surprise.message }}
@@ -181,8 +180,7 @@ function dismiss() {
                 <button
                   flex="~ 1 col items-center gap-1"
                   rounded-xl py-3
-                  bg="rose-50 dark:rose-900/20 hover:rose-100 dark:hover:rose-800/30"
-                  border="1 solid rose-200/40 dark:rose-700/40"
+                  class="bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-800/30 border border-solid border-rose-200/40 dark:border-rose-700/40"
                   transition="all duration-200"
                   active="scale-95"
                   :disabled="submitting"
@@ -194,8 +192,7 @@ function dismiss() {
                 <button
                   flex="~ 1 col items-center gap-1"
                   rounded-xl py-3
-                  bg="neutral-50 dark:neutral-800/50 hover:neutral-100 dark:hover:neutral-700/50"
-                  border="1 solid neutral-200/40 dark:neutral-700/40"
+                  class="bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 border border-solid border-neutral-200/40 dark:border-neutral-700/40"
                   transition="all duration-200"
                   active="scale-95"
                   :disabled="submitting"
@@ -207,8 +204,7 @@ function dismiss() {
                 <button
                   flex="~ 1 col items-center gap-1"
                   rounded-xl py-3
-                  bg="neutral-50 dark:neutral-800/50 hover:neutral-100 dark:hover:neutral-700/50"
-                  border="1 solid neutral-200/40 dark:neutral-700/40"
+                  class="bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 border border-solid border-neutral-200/40 dark:border-neutral-700/40"
                   transition="all duration-200"
                   active="scale-95"
                   :disabled="submitting"

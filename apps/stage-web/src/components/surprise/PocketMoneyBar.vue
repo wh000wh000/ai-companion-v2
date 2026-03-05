@@ -86,8 +86,7 @@ const nextAmountYuan = computed(() => {
   <div
     flex="~ col gap-2"
     w-full rounded-2xl p-4
-    bg="gradient-to-br from-amber-500/8 to-pink-500/8 dark:from-amber-700/15 dark:to-pink-700/15"
-    border="1 solid amber-200/30 dark:amber-700/30"
+    class="bg-gradient-to-br from-amber-500/8 to-pink-500/8 dark:from-amber-700/15 dark:to-pink-700/15 border border-solid border-amber-200/30 dark:border-amber-700/30"
   >
     <!-- Header -->
     <div flex items-center justify-between>
@@ -142,7 +141,7 @@ const nextAmountYuan = computed(() => {
       </div>
       <div
         relative h-1.5 w-full overflow-hidden rounded-full
-        bg="neutral-200/60 dark:neutral-700/40"
+        class="bg-neutral-200/60 dark:bg-neutral-700/40"
       >
         <div
           absolute left-0 top-0 h-full rounded-full
@@ -165,11 +164,11 @@ const nextAmountYuan = computed(() => {
     <div
       flex items-center gap-2
       rounded-lg px-3 py-2
-      bg="white/50 dark:neutral-800/50"
+      class="bg-white/50 dark:bg-neutral-800/50"
     >
       <div
         w-6 h-6 rounded-full
-        bg="primary-100 dark:primary-900/40"
+        class="bg-primary-100 dark:bg-primary-900/40"
         flex items-center justify-center
         flex-shrink-0
       >

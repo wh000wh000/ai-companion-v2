@@ -121,3 +121,5 @@ plugins-local
 plugins-development
 .env
 apps/server/.env
+
+.vercel

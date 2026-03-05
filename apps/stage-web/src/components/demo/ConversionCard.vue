@@ -64,7 +64,7 @@ function handleDismiss() {
       >
         <!-- Backdrop -->
         <div
-          absolute inset-0 bg="black/50"
+          absolute inset-0 class="bg-black/50"
           backdrop-blur-sm
           @click="handleDismiss"
         />
@@ -80,13 +80,13 @@ function handleDismiss() {
           <!-- Header gradient -->
           <div
             relative px-6 pt-8 pb-6
-            bg="gradient-to-br from-pink-500/15 via-purple-500/10 to-blue-500/15 dark:from-pink-700/25 dark:via-purple-700/15 dark:to-blue-700/20"
+            class="bg-gradient-to-br from-pink-500/15 via-purple-500/10 to-blue-500/15 dark:from-pink-700/25 dark:via-purple-700/15 dark:to-blue-700/20"
           >
             <div flex="~ col items-center" text-center>
               <!-- Icon -->
               <div
                 w-14 h-14 rounded-full mb-3
-                bg="white/80 dark:neutral-800/80"
+                class="bg-white/80 dark:bg-neutral-800/80"
                 flex items-center justify-center
                 shadow-lg
               >
@@ -119,13 +119,12 @@ function handleDismiss() {
                 :key="stat.label"
                 flex="~ items-center gap-3"
                 rounded-xl p-3
-                bg="neutral-50/80 dark:neutral-800/50"
-                border="1 solid neutral-200/30 dark:neutral-700/30"
+                class="bg-neutral-50/80 dark:bg-neutral-800/50 border border-solid border-neutral-200/30 dark:border-neutral-700/30"
               >
                 <div
                   flex items-center justify-center
                   w-9 h-9 rounded-lg
-                  bg="neutral-100 dark:neutral-700/50"
+                  class="bg-neutral-100 dark:bg-neutral-700/50"
                   shrink-0
                 >
                   <div :class="[stat.icon, stat.iconColor]" text-lg />
@@ -144,8 +143,7 @@ function handleDismiss() {
           <div px-6 pb-4>
             <div
               rounded-xl p-4
-              bg="gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-700/15 dark:to-orange-700/15"
-              border="1 solid amber-300/30 dark:amber-700/30"
+              class="bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-700/15 dark:to-orange-700/15 border border-solid border-amber-300/30 dark:border-amber-700/30"
             >
               <div flex="~ items-center gap-2" mb-2>
                 <div i-lucide-zap text="amber-500" />
@@ -182,9 +180,9 @@ function handleDismiss() {
               w-full rounded-xl py-3.5
               bg="gradient-to-r from-pink-500 to-purple-500"
               text="white" font-bold
-              shadow-lg shadow-pink-500/25
+              shadow-lg
               transition="all duration-200"
-              hover:shadow-xl hover:shadow-pink-500/35
+              class="shadow-pink-500/25 hover:shadow-xl hover:shadow-pink-500/35"
               active:scale-98
               @click="handleConvert"
             >
@@ -192,7 +190,7 @@ function handleDismiss() {
             </button>
             <button
               w-full rounded-xl py-2.5
-              bg="transparent hover:neutral-100/50 dark:hover:neutral-800/50"
+              class="bg-transparent hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50"
               text="sm neutral-400 dark:neutral-500 hover:neutral-600 dark:hover:neutral-300"
               transition-colors
               @click="handleDismiss"

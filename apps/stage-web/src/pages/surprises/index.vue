@@ -63,7 +63,7 @@ function handleScroll(e: Event) {
     <div flex="~ items-center gap-2" px-4 pt-4 pb-2>
       <button
         p-2.5 rounded-lg min-w-11 min-h-11
-        bg="transparent hover:neutral-100/50 dark:hover:neutral-800/50"
+        class="bg-transparent hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50"
         @click="router.back()"
       >
         <div i-lucide-arrow-left text="lg neutral-600 dark:neutral-300" />

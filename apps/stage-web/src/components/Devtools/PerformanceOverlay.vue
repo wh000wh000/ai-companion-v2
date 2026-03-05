@@ -72,11 +72,10 @@ function toggleRecording() {
   <div
     v-if="hasAnyEnabled"
     :style="{ opacity: hovered ? 1 : 0.3 }"
-    class="fixed bottom-3 left-3 z-50"
+    class="fixed bottom-3 left-3 z-50 bg-neutral-900/80"
     p-3
     flex="~ col gap-2"
     rounded="xl"
-    bg="neutral-900/80"
     text="white sm"
     shadow="xl"
     transition="opacity 200ms ease"

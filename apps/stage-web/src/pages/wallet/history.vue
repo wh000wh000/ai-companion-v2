@@ -119,7 +119,7 @@ function formatTime(dateStr: string) {
     <div flex="~ items-center gap-2">
       <button
         p-2.5 rounded-lg min-w-11 min-h-11
-        bg="transparent hover:neutral-100/50 dark:hover:neutral-800/50"
+        class="bg-transparent hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50"
         @click="router.back()"
       >
         <div i-lucide-arrow-left text="lg neutral-600 dark:neutral-300" />
@@ -164,8 +164,7 @@ function formatTime(dateStr: string) {
             :key="tx.id"
             flex="~ items-center gap-3"
             rounded-xl p-3
-            bg="neutral-50/50 dark:neutral-800/40"
-            border="1 solid neutral-200/20 dark:neutral-700/20"
+            class="bg-neutral-50/50 dark:bg-neutral-800/40 border border-solid border-neutral-200/20 dark:border-neutral-700/20"
           >
             <!-- Type Icon -->
             <div

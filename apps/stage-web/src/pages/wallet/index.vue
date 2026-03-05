@@ -65,7 +65,7 @@ function formatDate(dateStr: string) {
     <div flex="~ items-center gap-2">
       <button
         p-2.5 rounded-lg min-w-11 min-h-11
-        bg="transparent hover:neutral-100/50 dark:hover:neutral-800/50"
+        class="bg-transparent hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50"
         @click="router.back()"
       >
         <div i-lucide-arrow-left text="lg neutral-600 dark:neutral-300" />
@@ -82,8 +82,7 @@ function formatDate(dateStr: string) {
       <!-- Balance Card -->
       <div
         rounded-2xl p-6
-        bg="gradient-to-br from-pink-500/15 to-purple-500/15 dark:from-pink-700/25 dark:to-purple-700/25"
-        border="2 solid pink-200/30 dark:pink-800/30"
+        class="bg-gradient-to-br from-pink-500/15 to-purple-500/15 dark:from-pink-700/25 dark:to-purple-700/25 border-2 border-solid border-pink-200/30 dark:border-pink-800/30"
       >
         <div text="sm neutral-500 dark:neutral-400" mb-1>
           爱心币余额
@@ -101,7 +100,7 @@ function formatDate(dateStr: string) {
           <div
             v-if="wallet.subscriptionTier !== 'none'"
             rounded-full px-3 py-1
-            bg="blue-500/15 dark:blue-700/25"
+            class="bg-blue-500/15 dark:bg-blue-700/25"
             text="xs blue-600 dark:blue-300"
             font-medium
           >
@@ -113,8 +112,7 @@ function formatDate(dateStr: string) {
         <div
           v-if="wallet.isFirstCharge"
           mt-4 rounded-xl p-3
-          bg="amber-500/10 dark:amber-700/20"
-          border="1 solid amber-300/30 dark:amber-700/30"
+          class="bg-amber-500/10 dark:bg-amber-700/20 border border-solid border-amber-300/30 dark:border-amber-700/30"
           flex="~ items-center gap-2"
         >
           <div i-lucide-gift text-amber-500 text-lg />
@@ -159,13 +157,12 @@ function formatDate(dateStr: string) {
           :key="tx.id"
           flex="~ items-center gap-3"
           rounded-xl p-3
-          bg="neutral-50/50 dark:neutral-800/50"
-          border="1 solid neutral-200/30 dark:neutral-700/30"
+          class="bg-neutral-50/50 dark:bg-neutral-800/50 border border-solid border-neutral-200/30 dark:border-neutral-700/30"
         >
           <div
             flex items-center justify-center
             w-10 h-10 rounded-full
-            bg="neutral-100 dark:neutral-700/50"
+            class="bg-neutral-100 dark:bg-neutral-700/50"
           >
             <div :class="[getTypeIcon(tx.type), getTypeColor(tx.type)]" text-lg />
           </div>
