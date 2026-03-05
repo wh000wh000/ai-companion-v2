@@ -5,8 +5,8 @@
   "installCommand": "cd ../.. && corepack enable && corepack pnpm install --frozen-lockfile",
   "framework": "vite",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://RAILWAY_URL/api/:path*" },
-    { "source": "/health", "destination": "https://RAILWAY_URL/health" },
+    { "source": "/api/:path*", "destination": "https://server-production-a43d.up.railway.app/api/:path*" },
+    { "source": "/health", "destination": "https://server-production-a43d.up.railway.app/health" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
