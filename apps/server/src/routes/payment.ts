@@ -106,12 +106,9 @@ export function createPaymentRoutes(
 
     // ── POST /mock-pay/:id — Mock 支付完成（仅开发模式） ────────────────
     .post('/mock-pay/:id', authGuard, async (c) => {
-      // 安全：双重防御 — 生产环境 + 显式开关
-      if (process.env.NODE_ENV === 'production' || process.env.ENABLE_MOCK_PAY !== 'true') {
-        // 开发环境默认允许（NODE_ENV !== 'production' 且未显式禁用）
-        if (process.env.NODE_ENV === 'production') {
-          return c.json({ error: 'Not Found' }, 404)
-        }
+      // 安全：生产环境默认禁用 Mock 支付，除非显式设置 ENABLE_MOCK_PAY=true
+      if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCK_PAY !== 'true') {
+        return c.json({ error: 'Not Found' }, 404)
       }
 
       const user = c.get('user')!

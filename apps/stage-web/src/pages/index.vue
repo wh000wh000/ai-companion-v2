@@ -22,10 +22,14 @@ import { useSettingsAudioDevice } from '@proj-airi/stage-ui/stores/settings'
 import { breakpointsTailwind, useBreakpoints, useMouse } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 import DemoGuide from '../components/demo/DemoGuide.vue'
 import GiftFloatingButton from '../components/gift/GiftFloatingButton.vue'
+
 import { useDemoStore } from '../stores/demo'
+
+const router = useRouter()
 
 // ─── 角色 ID 动态化 ──────────────────────────────
 const CHAR_STORAGE_KEY = 'selected_character_id'
@@ -43,6 +47,13 @@ const GUIDE_DISMISSED_KEY = 'demo_guide_dismissed_day'
 // 页面挂载时加载 Demo 状态
 onMounted(() => {
   demoStore.loadState()
+  // Day5 自动检查是否应触发 Demo 惊喜
+  if (demoStore.isDemo && demoStore.currentDay >= 5) {
+    // 延迟执行，等待页面初始化完成
+    setTimeout(() => {
+      demoStore.checkDemoSurprise?.()
+    }, 2000)
+  }
 })
 
 // 是否显示引导浮层：Demo 模式下，当天未被用户关闭过
@@ -66,7 +77,10 @@ function handleGuideClaimCoins() {
 }
 
 function handleGuideViewSurprise() {
-  // 导航到惊喜页面（如果需要）
+  // 导航到惊喜列表页
+  router.push('/surprises')
+  // 标记 Demo 惊喜已查看
+  demoStore.markSurpriseReceived?.()
 }
 
 function handleGuideConvert() {

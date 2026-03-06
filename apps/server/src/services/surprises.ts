@@ -1,13 +1,15 @@
-import type { Database } from '../libs/db'
 import type { SurpriseTriggerContext } from '@ai-companion/soul-engine'
 
-import { and, desc, eq } from 'drizzle-orm'
+import type { Database } from '../libs/db'
 
 import {
   checkThresholdTrigger,
 } from '@ai-companion/soul-engine'
-import * as schema from '../schemas'
+import { and, desc, eq } from 'drizzle-orm'
+
 import { createNotFoundError } from '../utils/error'
+
+import * as schema from '../schemas'
 
 export function createSurpriseService(db: Database) {
   return {
@@ -104,9 +106,12 @@ export function createSurpriseService(db: Database) {
     /**
      * 更新状态/反馈
      */
-    async updateStatus(surpriseId: string, status: string, feedback?: string) {
+    async updateStatus(surpriseId: string, userId: string, status: string, feedback?: string) {
       const existing = await db.query.surprises.findFirst({
-        where: eq(schema.surprises.id, surpriseId),
+        where: and(
+          eq(schema.surprises.id, surpriseId),
+          eq(schema.surprises.userId, userId),
+        ),
       })
 
       if (!existing)

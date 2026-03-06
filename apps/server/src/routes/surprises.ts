@@ -1,3 +1,4 @@
+import type { O2OService } from '../services/o2o'
 import type { SurpriseService } from '../services/surprises'
 import type { HonoEnv } from '../types/hono'
 
@@ -31,7 +32,7 @@ function getSurpriseMessage(type: string): string {
   return messages[type] ?? '这是我给你准备的惊喜~'
 }
 
-export function createSurpriseRoutes(surpriseService: SurpriseService) {
+export function createSurpriseRoutes(surpriseService: SurpriseService, o2oService?: O2OService) {
   return new Hono<HonoEnv>()
     .use('*', authGuard)
 
@@ -74,12 +75,29 @@ export function createSurpriseRoutes(surpriseService: SurpriseService) {
 
       // 触发成功时自动创建惊喜记录，使前端可以展示惊喜动画
       if (triggerResult.shouldTrigger && triggerResult.bestType) {
+        // 如果是非虚拟惊喜且有 O2O 服务，获取推荐商品
+        let productName = getSurpriseProductName(triggerResult.bestType)
+        let amount = 0
+        const triggerBudget = (triggerResult as unknown as Record<string, unknown>).budget as number | undefined
+
+        if (triggerResult.bestType !== 'virtual' && o2oService && triggerBudget) {
+          const recommendations = o2oService.recommend({
+            budget: triggerBudget,
+            preferences: [], // v1 暂无偏好数据
+          })
+          if (recommendations.length > 0) {
+            const topPick = recommendations[0]
+            productName = topPick.name
+            amount = topPick.price
+          }
+        }
+
         const surprise = await surpriseService.createSurprise({
           userId: user.id,
           characterId: result.output.characterId,
           type: triggerResult.bestType,
-          productName: getSurpriseProductName(triggerResult.bestType),
-          amount: 0, // 虚拟惊喜免费
+          productName,
+          amount,
           status: 'sent',
           message: getSurpriseMessage(triggerResult.bestType),
         })
@@ -91,6 +109,7 @@ export function createSurpriseRoutes(surpriseService: SurpriseService) {
 
     // PATCH /:id/status — 更新状态
     .patch('/:id/status', chargeRateLimiter, async (c) => {
+      const user = c.get('user')!
       const id = c.req.param('id')
       const body = await c.req.json()
       const result = safeParse(SurpriseStatusUpdateSchema, body)
@@ -99,8 +118,10 @@ export function createSurpriseRoutes(surpriseService: SurpriseService) {
         throw createBadRequestError('Invalid Request', 'INVALID_REQUEST', result.issues)
       }
 
+      // 安全：传入 userId 做所有权校验，防止 IDOR
       const updated = await surpriseService.updateStatus(
         id,
+        user.id,
         result.output.status,
         result.output.feedback,
       )

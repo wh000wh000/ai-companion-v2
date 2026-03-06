@@ -1,14 +1,16 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { onMounted, ref } from 'vue'
+import { toast } from 'vue-sonner'
 
+import LevelUpCeremony from '../trust/LevelUpCeremony.vue'
+import TrustBar from '../trust/TrustBar.vue'
 import GiftAnimation from './GiftAnimation.vue'
 import GiftPanel from './GiftPanel.vue'
+
+import { useSurpriseStore } from '../../stores/surprise'
 import { GIFT_TIERS, useTrustStore } from '../../stores/trust'
 import { useWalletStore } from '../../stores/wallet'
-import { storeToRefs } from 'pinia'
-
-import TrustBar from '../trust/TrustBar.vue'
-import LevelUpCeremony from '../trust/LevelUpCeremony.vue'
 
 const props = withDefaults(defineProps<{
   characterId?: string
@@ -18,6 +20,7 @@ const props = withDefaults(defineProps<{
 
 const trustStore = useTrustStore()
 const walletStore = useWalletStore()
+const surpriseStore = useSurpriseStore()
 const { trustRecord, showLevelUp, levelUpInfo } = storeToRefs(trustStore)
 const { formattedBalance } = storeToRefs(walletStore)
 
@@ -50,7 +53,23 @@ function handleGiftSent(tierId: string, _result: unknown) {
 
   setTimeout(() => {
     showAnimation.value = false
+    // 送礼后提示零花钱增量（普通用户40%分成）
+    if (tier) {
+      const pocketGain = Math.floor(tier.cost * 10 * 0.4) // cost*10=分, *40%
+      const pocketYuan = (pocketGain / 100).toFixed(1)
+      toast.info(`角色获得 ${pocketYuan} 元零花钱`, { duration: 2000 })
+    }
   }, 2000)
+
+  // 送礼后延迟检查惊喜触发条件（等待动画播放完）
+  setTimeout(async () => {
+    try {
+      await surpriseStore.checkTrigger(props.characterId)
+    }
+    catch {
+      // 惊喜检查失败不影响送礼体验
+    }
+  }, 2500)
 }
 
 function toggleTrustBar() {
@@ -64,13 +83,11 @@ function toggleTrustBar() {
     <Transition name="trust-bar-slide">
       <div
         v-if="showTrustBar && trustRecord"
-        fixed z-50
-        class="bottom-20 right-4 md:bottom-24 md:right-6 bg-white/90 dark:bg-neutral-900/90 border-neutral-200/40 dark:border-neutral-700/40"
+
+        class="bottom-20 right-4 border-neutral-200/40 bg-white/90 md:bottom-24 md:right-6 dark:border-neutral-700/40 dark:bg-neutral-900/90"
         w="56 md:64"
-        backdrop-blur-md
-        rounded-xl
-        shadow-lg
-        px-3 py-2.5
+
+        fixed z-50 rounded-xl px-3 py-2.5 shadow-lg backdrop-blur-md
       >
         <TrustBar
           :trust-points="trustRecord.trustPoints"
@@ -82,33 +99,32 @@ function toggleTrustBar() {
 
     <!-- Floating buttons -->
     <div
-      fixed z-50
+
       class="bottom-4 right-4 md:bottom-6 md:right-6"
-      flex="~ col" gap-2 items-end
+      flex="~ col" fixed z-50 items-end gap-2
     >
       <!-- Trust info toggle with level badge -->
       <div relative>
         <!-- 信赖等级小标签 -->
         <div
           v-if="trustRecord"
-          absolute z-1
-          class="-top-2 -left-3 border border-solid border-neutral-200/60 dark:border-neutral-700/60"
-          rounded-full px-1.5 py-0.5
+
+          class="border border-neutral-200/60 border-solid -left-3 -top-2 dark:border-neutral-700/60"
+
           bg="white dark:neutral-800"
-          shadow-sm
+
           text="xs neutral-600 dark:neutral-300"
-          font-medium
-          whitespace-nowrap
+
+          absolute z-1 whitespace-nowrap rounded-full px-1.5 py-0.5 font-medium shadow-sm
         >
           Lv.{{ trustRecord.trustLevel }}
         </div>
         <button
-          class="floating-btn border-2 border-solid border-neutral-100/60 dark:border-neutral-800/30 bg-neutral-50/70 dark:bg-neutral-800/70"
-          w-10 h-10 flex items-center justify-center rounded-full backdrop-blur-md
-          shadow-md
+          class="floating-btn border-2 border-neutral-100/60 border-solid bg-neutral-50/70 dark:border-neutral-800/30 dark:bg-neutral-800/70"
+
           transition="all duration-200"
-          hover:shadow-lg
-          active:scale-95
+
+          h-10 w-10 flex items-center justify-center rounded-full shadow-md backdrop-blur-md active:scale-95 hover:shadow-lg
           :title="showTrustBar ? '隐藏信赖度' : '显示信赖度'"
           @click="toggleTrustBar"
         >
@@ -128,23 +144,23 @@ function toggleTrustBar() {
         <!-- 余额小标签 -->
         <div
           v-if="walletStore.wallet"
-          absolute z-1
-          class="-top-2 -left-3 border border-solid border-neutral-200/60 dark:border-neutral-700/60"
-          rounded-full px-1.5 py-0.5
+
+          class="border border-neutral-200/60 border-solid -left-3 -top-2 dark:border-neutral-700/60"
+
           bg="white dark:neutral-800"
-          shadow-sm
+
           text="xs neutral-600 dark:neutral-300"
-          font-medium
-          whitespace-nowrap
+
+          absolute z-1 whitespace-nowrap rounded-full px-1.5 py-0.5 font-medium shadow-sm
         >
           {{ formattedBalance }}
         </div>
         <button
-          class="floating-btn gift-btn shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40"
+          class="floating-btn gift-btn shadow-lg shadow-primary-500/30 hover:shadow-primary-500/40 hover:shadow-xl"
           bg="primary-500 hover:primary-600"
-          w-12 h-12 flex items-center justify-center rounded-full
+
           transition="all duration-200"
-          active:scale-90
+          h-12 w-12 flex items-center justify-center rounded-full active:scale-90
           title="送礼物"
           @click="openGiftPanel"
         >

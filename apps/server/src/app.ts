@@ -16,34 +16,34 @@ import { parsedEnv } from './libs/env'
 import { createOpenClawClient } from './libs/openclaw-client'
 import { sessionMiddleware } from './middlewares/auth'
 import { createOpenClawFallback } from './middlewares/openclaw-fallback'
-import { createChatRoute } from './routes/chat'
+import { createChannelSyncRoutes } from './routes/channel-sync'
 import { createCharacterRoutes } from './routes/characters'
+import { createChatRoute } from './routes/chat'
 import { createChatRoutes } from './routes/chats'
 import { createMemoryRoutes } from './routes/memory'
 import { createO2ORoutes } from './routes/o2o'
-import { createProviderRoutes } from './routes/providers'
+import { createPaymentRoutes } from './routes/payment'
 import { createProactiveRoutes } from './routes/proactive'
+import { createProviderRoutes } from './routes/providers'
 import { createSkillsRoutes } from './routes/skills'
 import { createSurpriseRoutes } from './routes/surprises'
 import { createTrustRoutes } from './routes/trust'
 import { createTTSRoutes } from './routes/tts'
 import { createWalletRoutes } from './routes/wallet'
-import { createPaymentRoutes } from './routes/payment'
-import { createChannelSyncRoutes } from './routes/channel-sync'
 import { seedPresetCharacters } from './seeds/characters'
+import { createChannelSyncService } from './services/channel-sync'
 import { createCharacterService } from './services/characters'
 import { createChatService } from './services/chats'
 import { createEconomyService } from './services/economy'
 import { createMemoryService } from './services/memory'
 import { createO2OService } from './services/o2o'
 import { createOpenClawService } from './services/openclaw'
+import { createOpenRouterService } from './services/openrouter'
+import { createPaymentService } from './services/payment'
 import { createProviderService } from './services/providers'
 import { createSurpriseService } from './services/surprises'
 import { createTrustService } from './services/trust'
-import { createPaymentService } from './services/payment'
-import { createChannelSyncService } from './services/channel-sync'
 import { createTTSService } from './services/tts'
-import { createOpenRouterService } from './services/openrouter'
 import { ApiError, createInternalError } from './utils/error'
 import { getTrustedOrigin } from './utils/origin'
 
@@ -167,7 +167,7 @@ function buildApp({ auth, characterService, chatService, providerService, econom
     /**
      * Surprise routes are handled by the surprise service.
      */
-    .route('/api/surprises', createSurpriseRoutes(surpriseService))
+    .route('/api/surprises', createSurpriseRoutes(surpriseService, o2oService))
 
     /**
      * TTS 语音合成路由 — CosyVoice V2 封装（Lv.7+ 门控）
@@ -398,5 +398,3 @@ function handleError(error: unknown, type: string) {
 
 process.on('uncaughtException', error => handleError(error, 'Uncaught exception'))
 process.on('unhandledRejection', error => handleError(error, 'Unhandled rejection'))
-
-// Deploy trigger 1772729199

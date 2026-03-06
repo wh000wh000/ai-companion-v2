@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import type { SurpriseRecord, SurpriseType } from '../../stores/surprise'
+
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
+import PocketMoneyBar from '../../components/surprise/PocketMoneyBar.vue'
 import SurpriseAnimation from '../../components/surprise/SurpriseAnimation.vue'
 import SurpriseCard from '../../components/surprise/SurpriseCard.vue'
+
 import { useSurpriseStore } from '../../stores/surprise'
+import { useWalletStore } from '../../stores/wallet'
 
 const router = useRouter()
 
 const surpriseStore = useSurpriseStore()
+const walletStore = useWalletStore()
 const {
   filteredSurprises,
   isLoading,
@@ -29,6 +34,9 @@ const filterTabs: { key: 'all' | SurpriseType, label: string }[] = [
 ]
 
 onMounted(async () => {
+  // 加载钱包数据（如果尚未加载），用于展示零花钱进度条
+  if (!walletStore.wallet)
+    walletStore.fetchWallet()
   await surpriseStore.fetchSurprises(true)
 })
 
@@ -58,11 +66,11 @@ function handleScroll(e: Event) {
 </script>
 
 <template>
-  <div flex="~ col" h-full max-w-lg mx-auto>
+  <div flex="~ col" mx-auto h-full max-w-lg>
     <!-- Header -->
-    <div flex="~ items-center gap-2" px-4 pt-4 pb-2>
+    <div flex="~ items-center gap-2" px-4 pb-2 pt-4>
       <button
-        p-2.5 rounded-lg min-w-11 min-h-11
+        min-h-11 min-w-11 rounded-lg p-2.5
         class="bg-transparent hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50"
         @click="router.back()"
       >
@@ -73,16 +81,24 @@ function handleScroll(e: Event) {
       </h2>
     </div>
 
+    <!-- 零花钱进度条 -->
+    <div v-if="walletStore.wallet" px-4 pb-2>
+      <PocketMoneyBar
+        :pocket-money="walletStore.wallet.pocketMoney ?? 0"
+        character-name="角色"
+      />
+    </div>
+
     <!-- Filter tabs -->
-    <div flex items-center gap-2 px-4 pb-3 overflow-x-auto class="hide-scrollbar">
+    <div flex items-center gap-2 overflow-x-auto px-4 pb-3 class="hide-scrollbar">
       <button
         v-for="tab in filterTabs"
         :key="tab.key"
-        rounded-full px-4 py-2 min-h-11
+
         text="sm"
-        font-medium
+
         transition="all duration-200"
-        whitespace-nowrap
+        min-h-11 whitespace-nowrap rounded-full px-4 py-2 font-medium
         :class="[
           filter === tab.key
             ? 'bg-primary-500 text-white shadow-sm shadow-primary-500/25'
@@ -138,7 +154,7 @@ function handleScroll(e: Event) {
         <div
           v-else-if="!hasMore && filteredSurprises.length > 0"
           text="xs neutral-400 dark:neutral-500"
-          text-center py-4
+          py-4 text-center
         >
           没有更多了
         </div>

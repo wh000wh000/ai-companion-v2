@@ -1,22 +1,32 @@
 <script setup lang="ts">
 import type { SurpriseRecord, SurpriseType } from '../../stores/surprise'
+
 import { computed, ref, watch } from 'vue'
+
 import { useSurpriseStore } from '../../stores/surprise'
 
 const props = defineProps<{
   surprise: SurpriseRecord
 }>()
 
-const show = defineModel<boolean>('show', { default: false })
-
 const emit = defineEmits<{
-  'feedback': [feedbackText: string]
+  feedback: [feedbackText: string]
 }>()
+
+const show = defineModel<boolean>('show', { default: false })
 
 const surpriseStore = useSurpriseStore()
 
 const phase = ref<'enter' | 'open' | 'reveal'>('enter')
 const submitting = ref(false)
+const feedbackResponse = ref<string | null>(null)
+
+// 角色回应映射
+const feedbackResponses: Record<string, string> = {
+  love: '太好了！你喜欢的话我就好开心！💕',
+  ok: '那下次我再想想有什么更好的！😊',
+  change: '对不起，下次我一定会更用心！🥺',
+}
 
 const effectClass = computed(() => {
   const effects: Record<SurpriseType, string> = {
@@ -75,8 +85,16 @@ async function handleFeedback(feedback: 'love' | 'ok' | 'change') {
       feedbackLabels[feedback],
     )
     emit('feedback', feedbackLabels[feedback])
+
+    // 显示角色回应后延迟关闭
+    feedbackResponse.value = feedbackResponses[feedback]
+    setTimeout(() => {
+      feedbackResponse.value = null
+      submitting.value = false
+      show.value = false
+    }, 1500)
   }
-  finally {
+  catch {
     submitting.value = false
     show.value = false
   }
@@ -100,7 +118,7 @@ function dismiss() {
         <div absolute inset-0 class="surprise-backdrop bg-black/60" />
 
         <!-- Effect particles -->
-        <div v-if="phase === 'reveal'" absolute inset-0 pointer-events-none :class="effectClass">
+        <div v-if="phase === 'reveal'" pointer-events-none absolute inset-0 overflow-hidden :class="effectClass">
           <!-- Stars for virtual -->
           <template v-if="surprise.type === 'virtual'">
             <div v-for="i in 12" :key="i" class="star-particle" :style="{ '--delay': `${i * 0.15}s`, '--x': `${(i % 4 - 1.5) * 80}px`, '--y': `${Math.floor(i / 4 - 1) * -100}px` }">
@@ -118,10 +136,16 @@ function dismiss() {
               💕
             </div>
           </template>
+          <!-- Unbox for physical -->
+          <template v-if="surprise.type === 'physical'">
+            <div v-for="i in 12" :key="i" class="unbox-particle" :style="{ '--delay': `${i * 0.12}s`, '--angle': `${(i / 12) * 360}deg`, '--distance': `${80 + (i % 3) * 30}px` }">
+              🎁
+            </div>
+          </template>
         </div>
 
         <!-- Content -->
-        <div relative z-1 flex="~ col items-center gap-4" max-w-sm w-full mx-3 sm:mx-4>
+        <div flex="~ col items-center gap-4" relative z-1 mx-3 max-w-sm w-full sm:mx-4>
           <!-- Gift box phase: enter + open -->
           <div
             v-if="phase !== 'reveal'"
@@ -148,17 +172,17 @@ function dismiss() {
             <div
               v-if="phase === 'reveal'"
               flex="~ col items-center gap-4"
-              rounded-2xl p-6
+
               bg="white dark:neutral-900"
-              shadow-2xl
-              w-full
+
+              w-full rounded-2xl p-6 shadow-2xl
               class="surprise-content"
             >
               <!-- Product display -->
-              <div text-5xl mb-1>
+              <div mb-1 text-5xl>
                 {{ typeEmoji }}
               </div>
-              <h3 text="xl neutral-800 dark:neutral-100" font-bold text-center>
+              <h3 text="xl neutral-800 dark:neutral-100" text-center font-bold>
                 {{ surprise.productName }}
               </h3>
               <span text="lg pink-500 dark:pink-400" font-semibold>
@@ -168,19 +192,19 @@ function dismiss() {
               <!-- Character message -->
               <div
                 w-full rounded-xl p-4
-                class="bg-primary-50/60 dark:bg-primary-900/20 border border-solid border-primary-200/30 dark:border-primary-700/30"
+                class="border border-primary-200/30 border-solid bg-primary-50/60 dark:border-primary-700/30 dark:bg-primary-900/20"
               >
-                <p text="sm neutral-600 dark:neutral-300" leading-relaxed text-center>
+                <p text="sm neutral-600 dark:neutral-300" text-center leading-relaxed>
                   {{ surprise.message }}
                 </p>
               </div>
 
               <!-- Feedback buttons -->
-              <div flex="~ gap-2 sm:gap-3" w-full>
+              <div v-if="!feedbackResponse" flex="~ gap-2 sm:gap-3" w-full>
                 <button
                   flex="~ 1 col items-center gap-1"
                   rounded-xl py-3
-                  class="bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-800/30 border border-solid border-rose-200/40 dark:border-rose-700/40"
+                  class="border border-rose-200/40 border-solid bg-rose-50 dark:border-rose-700/40 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-800/30"
                   transition="all duration-200"
                   active="scale-95"
                   :disabled="submitting"
@@ -192,7 +216,7 @@ function dismiss() {
                 <button
                   flex="~ 1 col items-center gap-1"
                   rounded-xl py-3
-                  class="bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 border border-solid border-neutral-200/40 dark:border-neutral-700/40"
+                  class="border border-neutral-200/40 border-solid bg-neutral-50 dark:border-neutral-700/40 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"
                   transition="all duration-200"
                   active="scale-95"
                   :disabled="submitting"
@@ -204,7 +228,7 @@ function dismiss() {
                 <button
                   flex="~ 1 col items-center gap-1"
                   rounded-xl py-3
-                  class="bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-700/50 border border-solid border-neutral-200/40 dark:border-neutral-700/40"
+                  class="border border-neutral-200/40 border-solid bg-neutral-50 dark:border-neutral-700/40 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-700/50"
                   transition="all duration-200"
                   active="scale-95"
                   :disabled="submitting"
@@ -214,6 +238,20 @@ function dismiss() {
                   <span text="xs neutral-600 dark:neutral-400" font-medium>不太合适</span>
                 </button>
               </div>
+
+              <!-- 角色回应 -->
+              <Transition name="surprise-reveal">
+                <div
+                  v-if="feedbackResponse"
+
+                  class="border border-primary-200/30 border-solid bg-primary-50/60 dark:border-primary-700/30 dark:bg-primary-900/20"
+                  mt-2 w-full rounded-xl p-4 text-center
+                >
+                  <p text="sm neutral-700 dark:neutral-200" font-medium>
+                    {{ feedbackResponse }}
+                  </p>
+                </div>
+              </Transition>
             </div>
           </Transition>
         </div>
@@ -384,6 +422,31 @@ function dismiss() {
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--distance) * -1)) scale(0.6);
+  }
+}
+
+/* Unbox particles for physical */
+.unbox-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 1.3rem;
+  animation: unbox-burst 1.3s ease-out var(--delay) both;
+  pointer-events: none;
+}
+
+@keyframes unbox-burst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0) scale(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--distance) * -0.6)) scale(1.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--distance) * -1.2)) scale(0.4) rotate(180deg);
   }
 }
 
