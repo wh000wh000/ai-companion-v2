@@ -1,19 +1,21 @@
-import type { Database } from '../libs/db'
 import type { GiftTier } from '@ai-companion/soul-engine'
 
-import { eq, desc, sql, and, gte } from 'drizzle-orm'
+import type { Database } from '../libs/db'
 
-import { useLogger } from '@guiiai/logg'
 import {
   processCharge as calcCharge,
   processGift as calcGift,
-  getChargePack,
   checkSpendingLimit,
   coinsToYuan,
+  getChargePack,
   GIFT_CONFIG,
 } from '@ai-companion/soul-engine'
-import * as schema from '../schemas'
+import { useLogger } from '@guiiai/logg'
+import { and, desc, eq, gte, sql } from 'drizzle-orm'
+
 import { createBadRequestError, createConflictError, createNotFoundError } from '../utils/error'
+
+import * as schema from '../schemas'
 
 /** 经济服务可选配置 */
 interface EconomyServiceOptions {
@@ -43,8 +45,10 @@ export function createEconomyService(db: Database, options?: EconomyServiceOptio
      * 初始化钱包（注册时调用）
      */
     async initWallet(userId: string) {
+      // Demo赠送：新用户默认赠送1000元等值爱心币（10000币）
+      const WELCOME_BONUS_COINS = 10000
       const [wallet] = await db.insert(schema.wallets)
-        .values({ userId })
+        .values({ userId, coinBalance: WELCOME_BONUS_COINS })
         .onConflictDoNothing()
         .returning()
 

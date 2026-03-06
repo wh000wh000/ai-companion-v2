@@ -59,6 +59,7 @@ export function createSurpriseRoutes(surpriseService: SurpriseService, o2oServic
     })
 
     // POST /check — 触发检查（触发成功时自动创建惊喜记录）
+    // G10: Demo模式下，checkTrigger前检查用户数据是否满足触发条件
     .post('/check', chargeRateLimiter, async (c) => {
       const user = c.get('user')!
       const body = await c.req.json()
@@ -72,6 +73,32 @@ export function createSurpriseRoutes(surpriseService: SurpriseService, o2oServic
         user.id,
         result.output.characterId,
       )
+
+      // G10: 添加 dataStatus 字段标注用户数据状态，非静默失败
+      const dataStatus: { trustReady: boolean, balanceReady: boolean, hint: string | null } = {
+        trustReady: true,
+        balanceReady: true,
+        hint: null,
+      }
+
+      if (!triggerResult.shouldTrigger) {
+        const reasons = (triggerResult as { reasons?: string[] }).reasons ?? []
+        if (reasons.some(r => r.includes('Trust') || r.includes('trust'))) {
+          dataStatus.trustReady = false
+          dataStatus.hint = '信赖值不足，多和角色互动提升信赖吧'
+        }
+        if (reasons.some(r => r.includes('Wallet') || r.includes('wallet') || r.includes('balance') || r.includes('pocket'))) {
+          dataStatus.balanceReady = false
+          dataStatus.hint = '零花钱余额不足，角色需要攒更多零花钱才能准备惊喜'
+        }
+        if (!dataStatus.trustReady && !dataStatus.balanceReady) {
+          dataStatus.hint = '信赖值和零花钱均不足，需要更多互动和送礼'
+        }
+        // 如果有可用类型但未触发（如冷却中），给出对应提示
+        if (dataStatus.trustReady && dataStatus.balanceReady && reasons.length > 0) {
+          dataStatus.hint = reasons.join('；')
+        }
+      }
 
       // 触发成功时自动创建惊喜记录，使前端可以展示惊喜动画
       if (triggerResult.shouldTrigger && triggerResult.bestType) {
@@ -101,10 +128,10 @@ export function createSurpriseRoutes(surpriseService: SurpriseService, o2oServic
           status: 'sent',
           message: getSurpriseMessage(triggerResult.bestType),
         })
-        return c.json({ ...triggerResult, surprise })
+        return c.json({ ...triggerResult, surprise, dataStatus })
       }
 
-      return c.json({ ...triggerResult, surprise: null })
+      return c.json({ ...triggerResult, surprise: null, dataStatus })
     })
 
     // PATCH /:id/status — 更新状态

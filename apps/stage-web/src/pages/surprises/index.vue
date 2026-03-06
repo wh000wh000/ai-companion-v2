@@ -2,12 +2,14 @@
 import type { SurpriseRecord, SurpriseType } from '../../stores/surprise'
 
 import { storeToRefs } from 'pinia'
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import PocketMoneyBar from '../../components/surprise/PocketMoneyBar.vue'
 import SurpriseAnimation from '../../components/surprise/SurpriseAnimation.vue'
 import SurpriseCard from '../../components/surprise/SurpriseCard.vue'
+// G23: 惊喜详情底部抽屉
+import SurpriseDetail from '../../components/surprise/SurpriseDetail.vue'
 
 import { useSurpriseStore } from '../../stores/surprise'
 import { useWalletStore } from '../../stores/wallet'
@@ -23,7 +25,12 @@ const {
   showAnimation,
   pendingSurprise,
   filter,
+  error,
 } = storeToRefs(surpriseStore)
+
+// G23: 详情抽屉状态
+const showDetail = ref(false)
+const detailSurprise = ref<SurpriseRecord | null>(null)
 
 const filterTabs: { key: 'all' | SurpriseType, label: string }[] = [
   { key: 'all', label: '全部' },
@@ -51,7 +58,14 @@ async function loadMore() {
 }
 
 function handleCardClick(surprise: SurpriseRecord) {
-  surpriseStore.showSurprise(surprise)
+  // G23: 打开详情抽屉（替代直接触发动画）
+  detailSurprise.value = surprise
+  showDetail.value = true
+}
+
+// G31: 错误重试
+async function retryFetch() {
+  await surpriseStore.fetchSurprises(true)
 }
 
 function handleScroll(e: Event) {
@@ -81,6 +95,29 @@ function handleScroll(e: Event) {
       </h2>
     </div>
 
+    <!-- G31: 错误状态展示 -->
+    <div
+      v-if="error"
+      flex="~ items-center justify-between"
+      mx-4 mb-2 rounded-xl px-4 py-3
+      class="border border-red-300/40 border-solid bg-red-50/80 dark:border-red-700/30 dark:bg-red-900/20"
+    >
+      <div flex="~ items-center gap-2">
+        <div i-lucide-alert-circle text="lg red-500" />
+        <span text="sm red-600 dark:red-400" font-medium>{{ error }}</span>
+      </div>
+      <button
+        min-h-9 rounded-lg px-3 py-1
+        text="xs white"
+        bg="red-500 hover:red-600"
+        font-medium
+        transition="colors duration-150"
+        @click="retryFetch"
+      >
+        重试
+      </button>
+    </div>
+
     <!-- 零花钱进度条 -->
     <div v-if="walletStore.wallet" px-4 pb-2>
       <PocketMoneyBar
@@ -90,6 +127,7 @@ function handleScroll(e: Event) {
     </div>
 
     <!-- Filter tabs -->
+    <!-- G32: 筛选Tab添加 min-h-11（44px）满足移动端触控标准 -->
     <div flex items-center gap-2 overflow-x-auto px-4 pb-3 class="hide-scrollbar">
       <button
         v-for="tab in filterTabs"
@@ -98,7 +136,7 @@ function handleScroll(e: Event) {
         text="sm"
 
         transition="all duration-200"
-        min-h-11 whitespace-nowrap rounded-full px-4 py-2 font-medium
+        min-h-11 min-w-11 whitespace-nowrap rounded-full px-4 py-2 font-medium
         :class="[
           filter === tab.key
             ? 'bg-primary-500 text-white shadow-sm shadow-primary-500/25'
@@ -166,6 +204,12 @@ function handleScroll(e: Event) {
       v-if="pendingSurprise"
       v-model:show="showAnimation"
       :surprise="pendingSurprise"
+    />
+
+    <!-- G23: 惊喜详情底部抽屉 -->
+    <SurpriseDetail
+      v-model:show="showDetail"
+      :surprise="detailSurprise"
     />
   </div>
 </template>

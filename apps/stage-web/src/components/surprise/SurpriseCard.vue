@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SurpriseRecord, SurpriseStatus, SurpriseType } from '../../stores/surprise'
+
 import { computed } from 'vue'
 
 const props = defineProps<{
@@ -7,7 +8,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'click': [surprise: SurpriseRecord]
+  click: [surprise: SurpriseRecord]
 }>()
 
 const typeIcon = computed(() => {
@@ -28,6 +29,46 @@ const typeLabel = computed(() => {
     personalized: '个性化',
   }
   return labels[props.surprise.type] || '惊喜'
+})
+
+// G24: 前端惊喜类型标注 — 显示对应的类型标签和emoji
+const typeEmoji = computed(() => {
+  const emojis: Record<SurpriseType, string> = {
+    virtual: '⭐',
+    electronic: '📱',
+    physical: '🎁',
+    personalized: '💝',
+  }
+  return emojis[props.surprise.type] || '🎁'
+})
+
+// G20: 实物惊喜商品图片映射（根据productName匹配预置emoji/图标）
+const productEmoji = computed(() => {
+  const name = props.surprise.productName ?? ''
+  const emojiMap: Record<string, string> = {
+    // 8款O2O商品映射
+    手工巧克力礼盒: '🍫',
+    定制马克杯: '☕',
+    手写明信片套装: '✉️',
+    迷你盆栽: '🌱',
+    香薰蜡烛: '🕯️',
+    定制手机壳: '📱',
+    手工编织手链: '📿',
+    精装笔记本: '📓',
+    // 默认类型映射
+    专属虚拟礼物: '⭐',
+    电子惊喜礼包: '🎮',
+    实物惊喜礼品: '🎁',
+    个性化定制惊喜: '💝',
+  }
+  // 精确匹配或包含匹配
+  if (emojiMap[name])
+    return emojiMap[name]
+  for (const [key, emoji] of Object.entries(emojiMap)) {
+    if (name.includes(key))
+      return emoji
+  }
+  return typeEmoji.value
 })
 
 const typeColor = computed(() => {
@@ -108,27 +149,28 @@ function handleClick() {
 <template>
   <div
     flex="~ col gap-3"
-    rounded-2xl p-4
+
     bg="white dark:neutral-900"
     shadow="sm"
     transition="all duration-200"
     hover="shadow-md"
-    cursor-pointer
-    class="surprise-card border border-solid border-neutral-200/40 dark:border-neutral-700/40"
+    cursor-pointer rounded-2xl p-4
+    class="surprise-card border border-neutral-200/40 border-solid dark:border-neutral-700/40"
     @click="handleClick"
   >
     <!-- Header: type + status + time -->
     <div flex items-center justify-between>
       <div flex items-center gap-2>
         <div
-          flex items-center justify-center
-          w-8 h-8 rounded-full
+
+          h-8 w-8 flex items-center justify-center rounded-full
           :class="typeBg"
         >
           <div :class="[typeIcon, typeColor]" text-base />
         </div>
+        <!-- G24: 类型标注（emoji + 文字） -->
         <span text="sm neutral-800 dark:neutral-100" font-medium>
-          {{ typeLabel }}
+          {{ typeEmoji }} {{ typeLabel }}
         </span>
       </div>
       <div flex items-center gap-2>
@@ -146,7 +188,15 @@ function handleClick() {
     </div>
 
     <!-- Product info -->
+    <!-- G20: 实物惊喜商品图片映射（emoji替代） -->
     <div flex items-center gap-3>
+      <div
+
+        h-12 w-12 flex items-center justify-center rounded-xl text-2xl
+        :class="typeBg"
+      >
+        {{ productEmoji }}
+      </div>
       <div flex="~ 1 col gap-0.5">
         <span text="base neutral-800 dark:neutral-100" font-semibold>
           {{ surprise.productName }}
@@ -161,12 +211,12 @@ function handleClick() {
     <div
       v-if="surprise.message"
       relative rounded-xl p-3
-      class="bg-primary-50/60 dark:bg-primary-900/20 border border-solid border-primary-200/30 dark:border-primary-700/30"
+      class="border border-primary-200/30 border-solid bg-primary-50/60 dark:border-primary-700/30 dark:bg-primary-900/20"
     >
       <div
-        absolute top="-1.5" left-3
-        w-3 h-3 rotate-45
-        class="bg-primary-50/60 dark:bg-primary-900/20 border-l border-t border-solid border-primary-200/30 dark:border-primary-700/30"
+        top="-1.5"
+        absolute left-3 h-3 w-3 rotate-45
+        class="border-l border-t border-primary-200/30 border-solid bg-primary-50/60 dark:border-primary-700/30 dark:bg-primary-900/20"
       />
       <p text="sm neutral-600 dark:neutral-300" leading-relaxed>
         {{ surprise.message }}

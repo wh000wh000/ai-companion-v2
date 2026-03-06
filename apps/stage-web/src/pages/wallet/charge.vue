@@ -6,6 +6,8 @@ import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 
 import ComplianceFooter from '../../components/compliance/ComplianceFooter.vue'
+// G4: 充值成功动画组件
+import ChargeSuccessAnimation from '../../components/wallet/ChargeSuccessAnimation.vue'
 
 import { usePaymentStore } from '../../stores/payment'
 import { CHARGE_PACKAGES, useWalletStore } from '../../stores/wallet'
@@ -18,6 +20,14 @@ const { wallet } = storeToRefs(walletStore)
 const selectedPackId = ref<string | null>(null)
 const isCharging = ref(false)
 const showConfirm = ref(false)
+// G4: 充值成功动画状态
+const showSuccessAnimation = ref(false)
+const successBaseCoins = ref(0)
+const successBonusCoins = ref(0)
+const successIsFirstCharge = ref(false)
+// G15: 充值失败状态
+const chargeFailed = ref(false)
+const lastFailedPackId = ref<string | null>(null)
 
 const selectedPack = computed(() => {
   if (!selectedPackId.value)
@@ -47,6 +57,7 @@ async function handleCharge() {
     return
 
   isCharging.value = true
+  chargeFailed.value = false
   try {
     const idempotencyKey = crypto.randomUUID()
 
@@ -59,25 +70,50 @@ async function handleCharge() {
     // 3. 刷新钱包余额
     await walletStore.fetchWallet()
 
+    // G4: 用充值成功动画替代简单toast
     const pack = CHARGE_PACKAGES.find(p => p.packId === selectedPackId.value)
-    toast.success(`充值成功！获得 ${getEffectiveCoins(pack?.coins ?? 0, pack?.bonus ?? 0).toLocaleString('zh-CN')} 爱心币`)
+    if (pack) {
+      successBaseCoins.value = pack.coins
+      successBonusCoins.value = pack.bonus
+      successIsFirstCharge.value = wallet.value?.isFirstCharge ?? false
+    }
 
-    selectedPackId.value = null
     showConfirm.value = false
     paymentStore.clearOrder()
-
-    // 充值成功后自动返回钱包页
-    setTimeout(() => {
-      router.push('/wallet')
-    }, 2000)
+    showSuccessAnimation.value = true
+    // 动画完成后导航回钱包页（由 handleAnimationComplete 处理）
+    selectedPackId.value = null
   }
   catch {
+    // G15: 充值失败时记录状态，显示重试按钮
+    lastFailedPackId.value = selectedPackId.value
+    chargeFailed.value = true
     toast.error('充值失败，请稍后重试')
   }
   finally {
     isCharging.value = false
   }
 }
+
+// G4: 动画结束后返回钱包页
+function handleAnimationComplete() {
+  showSuccessAnimation.value = false
+  router.push('/wallet')
+}
+
+// G15: 重试充值（自动选中上次失败的套餐）
+function retryCharge() {
+  if (lastFailedPackId.value) {
+    selectedPackId.value = lastFailedPackId.value
+    chargeFailed.value = false
+    showConfirm.value = true
+  }
+}
+
+// G16: 检查是否为Demo模式
+const isDemoMode = computed(() => {
+  return import.meta.env.VITE_DEMO_MODE === 'true' || import.meta.env.DEV
+})
 </script>
 
 <template>
@@ -92,6 +128,19 @@ async function handleCharge() {
         <div i-lucide-arrow-left text="lg neutral-600 dark:neutral-300" />
       </button>
       <span text="xl neutral-800 dark:neutral-100" font-bold>充值中心</span>
+    </div>
+
+    <!-- G16: Demo模式引导提示条 -->
+    <div
+      v-if="isDemoMode"
+      flex="~ items-center gap-2"
+      rounded-xl p-3
+      class="border border-blue-300/30 border-solid from-blue-500/10 to-purple-500/10 bg-gradient-to-r dark:border-blue-700/30 dark:from-blue-700/15 dark:to-purple-700/15"
+    >
+      <div i-lucide-info text="lg blue-500" />
+      <span text="xs blue-700 dark:blue-300" font-medium>
+        演示模式：选择任意套餐体验充值流程（无需真实支付）
+      </span>
     </div>
 
     <!-- Current Balance -->
@@ -188,7 +237,43 @@ async function handleCharge() {
         <div mt-3 text="lg neutral-700 dark:neutral-200" font-bold>
           ¥{{ pack.price }}
         </div>
+
+        <!-- G14: 性价比标注 -->
+        <div text="xs neutral-400 dark:neutral-500" mt-1>
+          约{{ (getEffectiveCoins(pack.coins, pack.bonus) / pack.price).toFixed(1) }}币/元
+        </div>
+        <!-- G14: 最划算标签（648档） -->
+        <div
+          v-if="pack.packId === 'pack_648'"
+          text="xs green-600 dark:green-400"
+          mt-1 font-bold
+        >
+          最划算
+        </div>
       </div>
+    </div>
+
+    <!-- G15: 充值失败重试提示 -->
+    <div
+      v-if="chargeFailed"
+      flex="~ col items-center gap-3"
+      rounded-xl p-4
+      class="border border-red-300/40 border-solid bg-red-50/60 dark:border-red-700/30 dark:bg-red-900/20"
+    >
+      <div flex="~ items-center gap-2">
+        <div i-lucide-alert-circle text="lg red-500" />
+        <span text="sm red-600 dark:red-400" font-medium>支付失败</span>
+      </div>
+      <button
+        min-h-11 rounded-lg px-6 py-2
+        text="sm white"
+        bg="red-500 hover:red-600"
+        font-medium
+        transition="colors duration-150"
+        @click="retryCharge"
+      >
+        重试充值（{{ CHARGE_PACKAGES.find(p => p.packId === lastFailedPackId)?.name ?? '' }}）
+      </button>
     </div>
 
     <!-- Confirm Button -->
@@ -311,6 +396,15 @@ async function handleCharge() {
       </div>
     </div>
   </Teleport>
+
+  <!-- G4+G17: 充值成功动画 -->
+  <ChargeSuccessAnimation
+    v-model:show="showSuccessAnimation"
+    :base-coins="successBaseCoins"
+    :bonus-coins="successBonusCoins"
+    :is-first-charge="successIsFirstCharge"
+    @complete="handleAnimationComplete"
+  />
 </template>
 
 <style scoped>
