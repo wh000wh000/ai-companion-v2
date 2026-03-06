@@ -15,7 +15,13 @@ export const memories = pgTable(
     importance: integer('importance').default(3).notNull(),
     level: integer('level').default(3).notNull(), // 2=短期, 3=长期
     tags: text('tags').array(), // 标签数组
-    // embedding: vector('embedding', { dimensions: 1536 }), // TODO: 等pgvector集成
+    // 向量嵌入列（预留，需 pgvector 扩展）
+    // 启用步骤:
+    //   1. CREATE EXTENSION IF NOT EXISTS vector;
+    //   2. 取消下行注释
+    //   3. 生成迁移: pnpm drizzle-kit generate
+    //   4. 在 memory.ts searchMemories 中添加余弦相似度检索
+    // embedding: vector('embedding', { dimensions: 1536 }),
     expiresAt: timestamp('expires_at', { withTimezone: true }), // Level 2: 7天过期
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')

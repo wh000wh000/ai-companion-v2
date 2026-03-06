@@ -52,4 +52,13 @@ export function createTTSRoutes(ttsService: TTSService, trustService: TrustServi
         mockMode: ttsService.isMockMode(),
       })
     })
+
+    /**
+     * GET /status — TTS 服务健康状态
+     * 返回服务模式 (mock/live)、可用性和延迟
+     */
+    .get('/status', async (c) => {
+      const health = await ttsService.healthCheck()
+      return c.json(health)
+    })
 }

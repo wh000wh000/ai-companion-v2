@@ -1,6 +1,6 @@
 import type { Database } from '../libs/db'
 
-import { and, desc, eq, gte, isNull, like, lte, or } from 'drizzle-orm'
+import { and, desc, eq, gte, isNull, like, lte, or, sql } from 'drizzle-orm'
 
 import { useLogger } from '@guiiai/logg'
 import * as schema from '../schemas'
@@ -44,8 +44,12 @@ export function createMemoryService(db: Database) {
     },
 
     /**
-     * 搜索记忆（简单关键词匹配）
-     * TODO: 集成pgvector后使用向量相似度70% + BM25关键词30%
+     * 搜索记忆
+     *
+     * 策略:
+     * 1. 优先使用 PostgreSQL tsvector 全文搜索（中文使用 simple 分词器）
+     * 2. 全文搜索无结果时降级为 LIKE 模糊匹配
+     * 3. 未来集成 pgvector 后使用向量相似度 70% + BM25 关键词 30% 混合检索
      */
     async searchMemories(params: {
       userId: string
@@ -56,28 +60,55 @@ export function createMemoryService(db: Database) {
     }) {
       const { userId, characterId, query, limit = 5, level } = params
 
-      // 当前使用简单的LIKE搜索
-      const conditions = [
+      // 基础过滤条件
+      const baseConditions = [
         eq(schema.memories.userId, userId),
         eq(schema.memories.characterId, characterId),
-        like(schema.memories.content, `%${query}%`),
       ]
 
       if (level !== undefined) {
-        conditions.push(eq(schema.memories.level, level))
+        baseConditions.push(eq(schema.memories.level, level))
       }
 
       // 排除已过期的记忆（expiresAt IS NULL 或 expiresAt > now）
-      conditions.push(
+      baseConditions.push(
         or(
           isNull(schema.memories.expiresAt),
           gte(schema.memories.expiresAt, new Date()),
         )!,
       )
 
+      // 尝试 tsvector 全文搜索（对中文使用 simple 分词器，按字符匹配）
+      try {
+        const tsQuery = query.split(/\s+/).filter(Boolean).join(' & ')
+        const tsvectorResults = await db.select()
+          .from(schema.memories)
+          .where(and(
+            ...baseConditions,
+            sql`to_tsvector('simple', ${schema.memories.content}) @@ to_tsquery('simple', ${tsQuery})`,
+          ))
+          .orderBy(
+            sql`ts_rank(to_tsvector('simple', ${schema.memories.content}), to_tsquery('simple', ${tsQuery})) DESC`,
+            desc(schema.memories.importance),
+          )
+          .limit(limit)
+
+        if (tsvectorResults.length > 0) {
+          return tsvectorResults
+        }
+      }
+      catch {
+        // tsvector 不可用（例如 PGlite 不完整支持），降级到 LIKE
+        logger.log('tsvector 搜索不可用，降级为 LIKE 搜索')
+      }
+
+      // 降级: LIKE 模糊搜索
       return await db.select()
         .from(schema.memories)
-        .where(and(...conditions))
+        .where(and(
+          ...baseConditions,
+          like(schema.memories.content, `%${query}%`),
+        ))
         .orderBy(desc(schema.memories.importance), desc(schema.memories.createdAt))
         .limit(limit)
     },

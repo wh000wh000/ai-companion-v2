@@ -5,14 +5,17 @@
  * 用时间线布局展示用户与角色之间的叙事支付历史。
  * 每个节点是一次"心意"，包含日期、故事标题、角色 quote、状态标签。
  * 进行中的叙事有呼吸动画。
+ * 集成：QuietCompanion（安静陪伴模式）+ MemoryMoment（记忆瞬间卡片）
  */
 import type { NarrativePayment } from '../../stores/narrative'
 
 import { useLocalStorage } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+import MemoryMoment from '../../components/narrative/MemoryMoment.vue'
+import QuietCompanion from '../../components/narrative/QuietCompanion.vue'
 import {
   NARRATIVE_PHASE_CONFIG,
   NARRATIVE_TYPE_CONFIG,
@@ -96,6 +99,42 @@ async function retryFetch() {
     narrativeStore.fetchActiveNarratives(selectedCharacterId.value),
     narrativeStore.fetchHistory(),
   ])
+}
+
+// ─── QuietCompanion 安静陪伴模式 ──────────────────
+const showQuietMode = ref(false)
+
+function toggleQuietMode() {
+  showQuietMode.value = !showQuietMode.value
+}
+
+// ─── MemoryMoment 记忆瞬间 ───────────────────────
+const showMemoryMoment = ref(false)
+const memoryMomentData = ref({
+  date: new Date().toISOString(),
+  summary: '',
+  characterNote: '',
+})
+
+// 当叙事列表中有已完成的项目时，展示记忆瞬间
+function showMemoryForNarrative(narrative: NarrativePayment) {
+  if (narrative.status === 'completed' && narrative.characterQuote) {
+    memoryMomentData.value = {
+      date: narrative.createdAt,
+      summary: narrative.storyDescription || narrative.storyTitle,
+      characterNote: narrative.characterQuote,
+    }
+    showMemoryMoment.value = true
+  }
+}
+
+function handleMemorySave() {
+  showMemoryMoment.value = false
+  // 可扩展：调用后端保存记忆瞬间
+}
+
+function handleMemoryDismiss() {
+  showMemoryMoment.value = false
 }
 </script>
 
@@ -198,9 +237,10 @@ async function retryFetch() {
 
           <!-- 节点卡片 -->
           <div
-            rounded-xl p-4
+            rounded-xl p-4 cursor-pointer
             class="timeline-card border border-neutral-200/30 border-solid bg-neutral-50/50 dark:border-neutral-700/30 dark:bg-neutral-800/50"
             :class="{ 'active-card': isActive(narrative) }"
+            @click="showMemoryForNarrative(narrative)"
           >
             <!-- 日期与状态标签 -->
             <div flex items-center justify-between mb-2>
@@ -280,19 +320,44 @@ async function retryFetch() {
         </div>
       </div>
 
-      <!-- 底部文案 -->
+      <!-- 底部文案 + 安静陪伴入口 -->
       <div
         v-if="allNarratives.length > 0"
         mt-4 py-6 text-center
       >
         <p
           text="xs neutral-300 dark:neutral-600"
-          font-light tracking-wider
+          font-light tracking-wider mb-4
         >
           每一份心意，都是关系的证据
         </p>
+        <button
+          rounded-full px-4 py-2
+          text="xs neutral-400 dark:neutral-500"
+          bg="neutral-100/50 dark:neutral-800/50 hover:neutral-200/50 dark:hover:neutral-700/50"
+          transition="colors duration-150"
+          @click="toggleQuietMode"
+        >
+          安静陪伴模式
+        </button>
       </div>
     </div>
+
+    <!-- QuietCompanion 安静陪伴覆盖层 -->
+    <QuietCompanion
+      :show="showQuietMode"
+      :character-name="characterName"
+    />
+
+    <!-- MemoryMoment 记忆瞬间卡片 -->
+    <MemoryMoment
+      :show="showMemoryMoment"
+      :date="memoryMomentData.date"
+      :summary="memoryMomentData.summary"
+      :character-note="memoryMomentData.characterNote"
+      @save="handleMemorySave"
+      @dismiss="handleMemoryDismiss"
+    />
   </div>
 </template>
 

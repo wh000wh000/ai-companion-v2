@@ -48,8 +48,22 @@ export function useAgentPush(serverUrl?: string) {
 
   /** 建立 WebSocket 连接 */
   function connect() {
-    const url = serverUrl
-      ?? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/push`
+    // WebSocket URL 优先级：
+    // 1. 参数传入
+    // 2. VITE_WS_URL 环境变量（Vercel 部署时需直连后端 WS）
+    // 3. VITE_SERVER_URL 推断（http→ws, https→wss）
+    // 4. 同域推断（开发模式）
+    let url = serverUrl
+    if (!url && import.meta.env.VITE_WS_URL) {
+      url = import.meta.env.VITE_WS_URL
+    }
+    if (!url && import.meta.env.VITE_SERVER_URL) {
+      const base = import.meta.env.VITE_SERVER_URL as string
+      url = base.replace(/^http/, 'ws').replace(/\/$/, '') + '/ws/push'
+    }
+    if (!url) {
+      url = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws/push`
+    }
 
     ws = new WebSocket(url)
 

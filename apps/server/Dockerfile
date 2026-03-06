@@ -8,11 +8,14 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY patches/ ./patches/
 COPY apps/server apps/server
 COPY packages/server-schema packages/server-schema
+COPY packages/soul-engine packages/soul-engine
+COPY openclaw/ openclaw/
 
 RUN --mount=type=cache,id=pnpm-store,target=/root/.pnpm-store \
     pnpm install --frozen-lockfile --ignore-scripts
 
 RUN pnpm -F @proj-airi/server-schema run build
+RUN pnpm -F @ai-companion/soul-engine run build
 
 EXPOSE 3000
 

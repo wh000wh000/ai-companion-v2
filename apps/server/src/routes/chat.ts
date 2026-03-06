@@ -34,7 +34,7 @@ const ChatSendSchema = object({
  *
  * Both channels respond with SSE for consistent client-side consumption.
  */
-export function createChatRoute(openclawService: OpenClawService, fallback?: OpenClawFallback, openrouter?: OpenRouterService, characterService?: CharacterService) {
+export function createChatRoute(openclawService: OpenClawService, fallback?: OpenClawFallback, openrouter?: OpenRouterService, characterService?: CharacterService, defaultCharacterId?: string) {
   return new Hono<HonoEnv>()
     .use('*', authGuard)
 
@@ -120,7 +120,7 @@ export function createChatRoute(openclawService: OpenClawService, fallback?: Ope
       }
 
       // 使用 OpenRouter 直连 LLM，以角色人格回复
-      const resolvedCharacterId = characterId ?? 'preset-xiaoxing'
+      const resolvedCharacterId = characterId ?? defaultCharacterId ?? 'preset-xiaoxing'
 
       // 优先从 DB 获取角色 systemPrompt
       let dbSystemPrompt: string | undefined

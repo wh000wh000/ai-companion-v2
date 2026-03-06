@@ -129,7 +129,8 @@ export const useNarrativeStore = defineStore('narrative', () => {
       if (!res.ok)
         throw new Error(`创建叙事支付失败: ${res.status}`)
 
-      const data: NarrativePayment = await res.json()
+      const json = await res.json()
+      const data: NarrativePayment = json.payment
       activeNarratives.value.unshift(data)
 
       // 更新冷却期计时
@@ -170,7 +171,8 @@ export const useNarrativeStore = defineStore('narrative', () => {
       })
       if (!res.ok)
         throw new Error(`获取进行中叙事失败: ${res.status}`)
-      activeNarratives.value = await res.json()
+      const json = await res.json()
+      activeNarratives.value = json.narratives
     }
     catch (e) {
       error.value = e instanceof Error ? e.message : '未知错误'
@@ -192,7 +194,8 @@ export const useNarrativeStore = defineStore('narrative', () => {
       })
       if (!res.ok)
         throw new Error(`获取叙事历史失败: ${res.status}`)
-      history.value = await res.json()
+      const json = await res.json()
+      history.value = json.payments
     }
     catch (e) {
       error.value = e instanceof Error ? e.message : '未知错误'

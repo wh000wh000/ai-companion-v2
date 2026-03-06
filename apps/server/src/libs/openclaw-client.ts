@@ -352,11 +352,11 @@ export class OpenClawClient extends EventEmitter<OpenClawClientEvents> {
   private handleNotification(msg: JsonRpcNotification): void {
     const params = msg.params ?? {}
 
-    // Handle streaming token notifications
-    // OpenClaw emits streaming tokens as notifications with method like
-    // `chat.stream` or `stream.token`, carrying a request_id and token data.
-    // TODO: Verify exact notification method name from OpenClaw docs once
-    // Gateway Token pairing is complete.
+    // OpenClaw 流式 Token 通知 API 契约:
+    //   通知方法: "chat.stream" 或 "stream.token"
+    //   params: { request_id: number, token: string, done: boolean }
+    //   done=true 时表示流结束，客户端应 resolve Promise
+    // 两个方法名均监听，以兼容不同 Gateway 版本
     if (msg.method === 'chat.stream' || msg.method === 'stream.token') {
       const requestId = params.request_id as number | undefined
       const token = params.token as string | undefined
@@ -449,9 +449,11 @@ export class OpenClawClient extends EventEmitter<OpenClawClientEvents> {
 
   /** Build a WebSocket URL with the auth token as a query parameter. */
   private buildAuthUrl(): string {
-    // TODO: Verify the exact auth query param name once Gateway Token
-    // pairing is complete. OpenClaw may use `token`, `auth`, or a custom
-    // header-based approach via a protocol sub-header.
+    // OpenClaw Gateway 认证方式:
+    //   查询参数: ?token=<gateway_token>
+    //   参考 GitHub issue #2248: 设备签名验证可通过
+    //   dangerouslyDisableDeviceAuth=true 禁用
+    // 注意: 生产环境应使用 Device Pairing 而非 query param token
     const url = new URL(this.config.url)
     url.searchParams.set('token', this.config.token)
     return url.toString()

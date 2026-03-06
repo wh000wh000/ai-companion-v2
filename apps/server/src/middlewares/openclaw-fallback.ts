@@ -11,12 +11,12 @@ import { useLogger } from '@guiiai/logg'
  * - 5分钟后自动重试 OpenClaw 连接
  * - 记录降级事件日志
  */
-export function createOpenClawFallback(openclawService: OpenClawService) {
+export function createOpenClawFallback(openclawService: OpenClawService, retryIntervalMs?: number) {
   const logger = useLogger('openclaw-fallback').useGlobalConfig()
 
   let fallbackMode = false
   let lastFallbackTime = 0
-  const RETRY_INTERVAL_MS = 5 * 60 * 1000 // 5分钟
+  const RETRY_INTERVAL_MS = retryIntervalMs ?? 5 * 60 * 1000
 
   return {
     /**

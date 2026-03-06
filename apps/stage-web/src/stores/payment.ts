@@ -3,13 +3,16 @@ import { ref } from 'vue'
 
 // 支付订单类型定义
 export interface PaymentOrder {
-  id: string
+  orderId: string
   userId: string
   packId: string
   amount: number
   provider: string
-  status: 'pending' | 'paid' | 'failed' | 'expired'
+  status: 'created' | 'paying' | 'paid' | 'fulfilled' | 'closed' | 'refunded'
+  paymentParams?: Record<string, unknown>
   createdAt: string
+  paidAt?: string
+  expireAt: string
 }
 
 export const usePaymentStore = defineStore('payment', () => {

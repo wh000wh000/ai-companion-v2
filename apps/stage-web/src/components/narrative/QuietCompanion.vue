@@ -102,10 +102,9 @@ function handleCardDismiss() {
             px-4 py-3
             bg="white/8"
             text="sm warm-gray-400"
-            class="placeholder-warm-gray-600"
             border="1 solid warm-gray-700/30"
             outline-none
-            class="quiet-input"
+            class="placeholder-warm-gray-600 quiet-input"
           >
         </div>
       </div>

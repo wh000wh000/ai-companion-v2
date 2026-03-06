@@ -15,6 +15,7 @@ import { createDrizzle, migrateDatabase } from './libs/db'
 import { parsedEnv } from './libs/env'
 import { createOpenClawClient } from './libs/openclaw-client'
 import { sessionMiddleware } from './middlewares/auth'
+import { closeAllConnections, setupWebSocketServer } from './libs/ws-push'
 import { createOpenClawFallback } from './middlewares/openclaw-fallback'
 import { createChannelSyncRoutes } from './routes/channel-sync'
 import { createCharacterRoutes } from './routes/characters'
@@ -84,9 +85,10 @@ interface AppDeps {
   narrativePaymentService: NarrativePaymentServiceType
   channelSyncService: ChannelSyncServiceType
   openrouterService: OpenRouterServiceType
+  defaultCharacterId: string
 }
 
-function buildApp({ auth, characterService, chatService, providerService, economyService, trustService, surpriseService, memoryService, openclawService, openclawFallback, openclawToken, ttsService, o2oService, paymentService, narrativePaymentService, channelSyncService, openrouterService }: AppDeps) {
+function buildApp({ auth, characterService, chatService, providerService, economyService, trustService, surpriseService, memoryService, openclawService, openclawFallback, openclawToken, ttsService, o2oService, paymentService, narrativePaymentService, channelSyncService, openrouterService, defaultCharacterId }: AppDeps) {
   const logger = useLogger('app').useGlobalConfig()
 
   return new Hono<HonoEnv>()
@@ -211,7 +213,7 @@ function buildApp({ auth, characterService, chatService, providerService, econom
     /**
      * OpenClaw chat routes — dual-channel (OpenClaw Agent / fallback LLM).
      */
-    .route('/api/chat', createChatRoute(openclawService, openclawFallback, openrouterService, characterService))
+    .route('/api/chat', createChatRoute(openclawService, openclawFallback, openrouterService, characterService, defaultCharacterId))
 }
 
 export type AppType = ReturnType<typeof buildApp>
@@ -333,8 +335,11 @@ async function createApp() {
 
   // OpenClaw 降级管理器 — 在 openclawService 之后创建
   const openclawFallback = injeca.provide('services:openclaw-fallback', {
-    dependsOn: { openclawService },
-    build: ({ dependsOn }) => createOpenClawFallback(dependsOn.openclawService),
+    dependsOn: { openclawService, env: parsedEnv },
+    build: ({ dependsOn }) => createOpenClawFallback(
+      dependsOn.openclawService,
+      Number(dependsOn.env.OPENCLAW_RETRY_INTERVAL_MS) || undefined,
+    ),
   })
 
   // OpenRouter LLM 服务 — fallback 通道，OpenClaw 不可用时直连 LLM
@@ -345,6 +350,7 @@ async function createApp() {
         apiKey: dependsOn.env.OPENROUTER_API_KEY ?? '',
         baseUrl: dependsOn.env.OPENROUTER_BASE_URL,
         model: dependsOn.env.OPENROUTER_MODEL,
+        maxTokens: Number(dependsOn.env.OPENROUTER_MAX_TOKENS) || 1024,
       })
 
       if (service.isAvailable()) {
@@ -396,17 +402,67 @@ async function createApp() {
     openclawFallback: resolved.openclawFallback,
     openclawToken: resolved.env.OPENCLAW_TOKEN,
     openrouterService: resolved.openrouterService,
+    defaultCharacterId: resolved.env.DEFAULT_CHARACTER_ID,
   })
 
   const port = Number(resolved.env.PORT) || 3001
   logger.withFields({ port }).log('Server started')
 
-  return { app, port }
+  return { app, port, auth: resolved.auth }
 }
 
 // eslint-disable-next-line antfu/no-top-level-await
-const { app, port } = await createApp()
-serve({ fetch: app.fetch, port })
+const { app, port, auth } = await createApp()
+const server = serve({ fetch: app.fetch, port })
+
+// ─── WebSocket 推送服务初始化 ────────────────────────────────────────────────
+
+setupWebSocketServer(server, async (token) => {
+  try {
+    // 使用 better-auth 验证 session token
+    const session = await auth.api.getSession({ headers: new Headers({ authorization: `Bearer ${token}` }) })
+    return session?.user?.id ?? null
+  }
+  catch {
+    return null
+  }
+})
+
+// ─── 优雅关闭 ──────────────────────────────────────────────────────────────
+
+const SHUTDOWN_TIMEOUT_MS = 30_000
+
+function gracefulShutdown(signal: string) {
+  const logger = useLogger('shutdown').useGlobalConfig()
+  logger.log(`Received ${signal}, starting graceful shutdown...`)
+
+  const forceExit = setTimeout(() => {
+    logger.warn('Graceful shutdown timed out, forcing exit')
+    process.exit(1)
+  }, SHUTDOWN_TIMEOUT_MS)
+  // 允许进程在 timer 到期前自然退出
+  forceExit.unref()
+
+  // 1. 停止接受新连接
+  server.close(() => {
+    logger.log('HTTP server closed')
+  })
+
+  // 2. 关闭所有 WebSocket 连接
+  closeAllConnections()
+
+  // 3. 停止 injeca 容器（关闭 DB 连接等）
+  injeca.stop().then(() => {
+    logger.log('DI container stopped')
+    process.exit(0)
+  }).catch((err) => {
+    logger.withError(err).error('Error during DI container shutdown')
+    process.exit(1)
+  })
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 
 function handleError(error: unknown, type: string) {
   useLogger().withError(error).error(type)

@@ -2,6 +2,8 @@ import type { EconomyService } from '../services/economy'
 import type { PaymentService } from '../services/payment'
 import type { HonoEnv } from '../types/hono'
 
+import process from 'node:process'
+
 import { Hono } from 'hono'
 import { safeParse } from 'valibot'
 
@@ -19,13 +21,13 @@ import { createBadRequestError } from '../utils/error'
  * - POST /callback/wechat  — 微信支付回调（无需认证）
  * - POST /callback/alipay  — 支付宝回调（无需认证）
  * - GET  /order/:id        — 查询订单状态（需认证）
- * - POST /mock-pay/:id     — Mock 支付完成（需认证，仅开发模式）
+ * - POST /mock-pay/:id     — Mock 支付完成（需认证，仅 ENABLE_MOCK_PAY=true 或非生产环境）
  */
 export function createPaymentRoutes(
   paymentService: PaymentService,
   economyService: EconomyService,
 ) {
-  return new Hono<HonoEnv>()
+  const app = new Hono<HonoEnv>()
 
     // ── POST /create-order — 创建支付订单 ─────────────────────────────
     .post('/create-order', authGuard, async (c) => {
@@ -104,13 +106,11 @@ export function createPaymentRoutes(
       return c.json({ order })
     })
 
-    // ── POST /mock-pay/:id — Mock 支付完成（仅开发模式） ────────────────
-    .post('/mock-pay/:id', authGuard, async (c) => {
-      // 安全：生产环境默认禁用 Mock 支付，除非显式设置 ENABLE_MOCK_PAY=true
-      if (process.env.NODE_ENV === 'production' && process.env.ENABLE_MOCK_PAY !== 'true') {
-        return c.json({ error: 'Not Found' }, 404)
-      }
-
+  // ── POST /mock-pay/:id — Mock 支付完成 ────────────────
+  // 安全：在路由注册时决定是否挂载，而非运行时判断
+  const mockPayEnabled = process.env.NODE_ENV !== 'production' || process.env.ENABLE_MOCK_PAY === 'true'
+  if (mockPayEnabled) {
+    app.post('/mock-pay/:id', authGuard, async (c) => {
       const user = c.get('user')!
       const orderId = c.req.param('id')
 
@@ -131,4 +131,7 @@ export function createPaymentRoutes(
 
       return c.json({ order, charged: true })
     })
+  }
+
+  return app
 }

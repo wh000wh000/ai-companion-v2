@@ -83,7 +83,7 @@ export function createTrustService(db: Database, options?: TrustServiceOptions) 
             eq(schema.trustRecords.userId, userId),
             eq(schema.trustRecords.characterId, characterId),
           ))
-          // Note: FOR UPDATE removed for PGlite compatibility in tests
+          .for('update')
 
         if (!record)
           throw createNotFoundError('Trust record not found')
@@ -182,6 +182,7 @@ export function createTrustService(db: Database, options?: TrustServiceOptions) 
             eq(schema.trustRecords.userId, userId),
             eq(schema.trustRecords.characterId, characterId),
           ))
+          .for('update')
 
         if (!record)
           throw createNotFoundError('Trust record not found')
@@ -236,7 +237,7 @@ export function createTrustService(db: Database, options?: TrustServiceOptions) 
             eq(schema.trustRecords.userId, userId),
             eq(schema.trustRecords.characterId, characterId),
           ))
-          // Note: FOR UPDATE removed for PGlite compatibility in tests
+          .for('update')
 
         if (!record)
           throw createNotFoundError('Trust record not found')

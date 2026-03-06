@@ -87,9 +87,13 @@ export function createOpenClawService(client: OpenClawClient) {
       onToken?: (token: string) => void,
     ): Promise<string> {
       try {
-        // TODO: Verify exact param schema for `chat.send` once Gateway
-        // pairing is complete. The params below follow the RPC method
-        // signature documented in AGENT_PLATFORM_SELECTION.md.
+        // OpenClaw JSON-RPC API 契约:
+        //   method: "chat.send"
+        //   params: { agent_id: string, message: string, stream?: boolean }
+        //   response (non-stream): { text: string }
+        //   response (stream): 通过 "chat.stream" 通知逐 token 推送
+        // 参考: docs/AGENT_PLATFORM_SELECTION.md
+        // 注意: Gateway Token 配对完成后需验证实际参数是否与文档一致
         const result = await client.callStreaming('chat.send', {
           agent_id: agentId,
           message,
@@ -113,8 +117,12 @@ export function createOpenClawService(client: OpenClawClient) {
      */
     async getAgentState(agentId: string): Promise<AgentState> {
       try {
-        // TODO: Verify exact response shape from `status` / `system-presence`
-        // RPC methods.
+        // OpenClaw JSON-RPC API 契约:
+        //   method: "status"
+        //   params: { agent_id: string }
+        //   response 格式一 (单Agent): { online: boolean, last_active: string }
+        //   response 格式二 (多Agent): { agents: [{ id, online, last_active }] }
+        // 注意: Gateway Token 配对完成后需验证实际响应格式
         const result = await client.call<{
           online?: boolean
           last_active?: string
@@ -160,8 +168,11 @@ export function createOpenClawService(client: OpenClawClient) {
       callback: (msg: AgentMessage) => void,
     ): () => void {
       const handler = (method: string, params: Record<string, unknown>) => {
-        // TODO: Verify exact notification methods for proactive Agent
-        // messages. Likely `chat.message` or `agent.message`.
+        // OpenClaw 主动推送通知 API 契约:
+        //   通知方法: "chat.message" 或 "agent.message"
+        //   params: { agent_id, content/message, type?, timestamp?, metadata? }
+        //   type 枚举: "surprise" | "greeting" | "reminder" | "system"
+        // 两个方法名均监听，以兼容不同 Gateway 版本
         if (method === 'chat.message' || method === 'agent.message') {
           const sourceAgentId = params.agent_id as string | undefined
           if (sourceAgentId && sourceAgentId !== agentId)

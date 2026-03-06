@@ -37,15 +37,16 @@ export function createPaymentService(db: Database, config?: PaymentConfig) {
       if (!pack)
         throw createBadRequestError('Invalid pack ID', 'INVALID_PACK')
 
-      // 2. 幂等性检查 — 同一用户相同 idempotencyKey 不重复创建
+      // 2. 幂等性检查 — 使用专用 idempotencyKey 列
       if (idempotencyKey) {
         const existing = await db.query.paymentOrders.findFirst({
-          where: and(
-            eq(schema.paymentOrders.userId, userId),
-            eq(schema.paymentOrders.description, `idempotency:${idempotencyKey}`),
-          ),
+          where: eq(schema.paymentOrders.idempotencyKey, idempotencyKey),
         })
         if (existing) {
+          // 安全：验证归属用户
+          if (existing.userId !== userId) {
+            throw createBadRequestError('Idempotency key already used', 'IDEMPOTENCY_CONFLICT')
+          }
           return {
             order: this.toPaymentOrder(existing),
             duplicate: true,
@@ -72,7 +73,8 @@ export function createPaymentService(db: Database, config?: PaymentConfig) {
         provider: selectedProvider,
         status: paymentOrder.status,
         paymentParams: paymentOrder.paymentParams ? JSON.stringify(paymentOrder.paymentParams) : null,
-        description: idempotencyKey ? `idempotency:${idempotencyKey}` : `充值 ${pack.name}`,
+        idempotencyKey: idempotencyKey ?? null,
+        description: `充值 ${pack.name}`,
         expireAt: paymentOrder.expireAt,
       }).returning()
 

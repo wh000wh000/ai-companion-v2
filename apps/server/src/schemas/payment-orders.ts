@@ -31,6 +31,8 @@ export const paymentOrders = pgTable(
     transactionId: text('transaction_id'),
     /** 前端唤起支付所需的参数（JSON 序列化） */
     paymentParams: text('payment_params'),
+    /** 幂等键 — 防止重复创建订单（由客户端生成的唯一标识） */
+    idempotencyKey: text('idempotency_key').unique(),
     /** 订单描述 */
     description: text('description'),
     /** 支付完成时间 */

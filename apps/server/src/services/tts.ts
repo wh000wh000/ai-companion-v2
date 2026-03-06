@@ -112,6 +112,44 @@ export function createTTSService(config?: { apiKey?: string, apiUrl?: string }) 
     isMockMode(): boolean {
       return mockMode
     },
+
+    /**
+     * 健康检查：验证 TTS 服务可用性
+     * - Mock模式：始终返回 healthy
+     * - 生产模式：尝试发送小请求验证 API 连通性
+     */
+    async healthCheck(): Promise<{ healthy: boolean, mode: 'mock' | 'live', latencyMs?: number }> {
+      if (mockMode) {
+        return { healthy: true, mode: 'mock' }
+      }
+
+      const start = Date.now()
+      try {
+        // 发送最短文本测试 API 可达性
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'cosyvoice-v2',
+            input: { text: '你好' },
+            parameters: {
+              voice: 'cosyvoice-xiaoxing',
+              format: 'mp3',
+            },
+          }),
+          signal: AbortSignal.timeout(10_000),
+        })
+
+        const latencyMs = Date.now() - start
+        return { healthy: response.ok, mode: 'live', latencyMs }
+      }
+      catch {
+        return { healthy: false, mode: 'live', latencyMs: Date.now() - start }
+      }
+    },
   }
 }
 

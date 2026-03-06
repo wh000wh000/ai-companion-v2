@@ -142,7 +142,7 @@ export function createEconomyService(db: Database, options?: EconomyServiceOptio
      * 4. 更新 wallet + 插入 transaction
      * 5. 返回 GiftSendResult
      */
-    async processGift(userId: string, characterId: string, giftTier: string, idempotencyKey: string) {
+    async processGift(userId: string, characterId: string, giftTier: string, idempotencyKey: string, userAge?: number) {
       // OpenClaw Agent 驱动时记录日志
       if (openclawMode) {
         logger.log(`Gift [${giftTier}] triggered by OpenClaw Agent for user=${userId} character=${characterId}`)
@@ -160,7 +160,7 @@ export function createEconomyService(db: Database, options?: EconomyServiceOptio
       }
 
       // 1b. 消费限额检查（合规要求，含月累计）
-      // TODO: 从用户档案获取真实年龄，当前默认为成年人（18）
+      const effectiveAge = userAge ?? 18
       const giftDef = GIFT_CONFIG.find(g => g.tier === giftTier)
       if (giftDef) {
         const amountYuan = coinsToYuan(giftDef.coinCost)
@@ -177,7 +177,7 @@ export function createEconomyService(db: Database, options?: EconomyServiceOptio
             gte(schema.transactions.createdAt, monthStart),
           ))
         const monthlySpent = Number(monthlyResult?.total ?? 0)
-        const spendingCheck = checkSpendingLimit(amountYuan, 18, monthlySpent)
+        const spendingCheck = checkSpendingLimit(amountYuan, effectiveAge, monthlySpent)
         if (!spendingCheck.allowed) {
           throw createBadRequestError(spendingCheck.reason ?? '超出消费限额', 'SPENDING_LIMIT_EXCEEDED')
         }

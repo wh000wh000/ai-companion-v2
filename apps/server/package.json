@@ -12,11 +12,11 @@
     "db:push": "pnpm run apply:env -- drizzle-kit push"
   },
   "dependencies": {
+    "@ai-companion/soul-engine": "workspace:*",
     "@dotenvx/dotenvx": "^1.52.0",
     "@electric-sql/pglite": "catalog:",
     "@guiiai/logg": "catalog:",
     "@hono/node-server": "^1.19.9",
-    "@ai-companion/soul-engine": "workspace:*",
     "@proj-airi/drizzle-orm-browser-migrator": "^0.1.4",
     "@proj-airi/server-schema": "workspace:*",
     "better-auth": "^1.4.19",
@@ -26,10 +26,12 @@
     "injeca": "catalog:",
     "postgres": "^3.4.8",
     "tsx": "^4.21.0",
-    "valibot": "catalog:"
+    "valibot": "catalog:",
+    "ws": "catalog:"
   },
   "devDependencies": {
     "@better-auth/cli": "^1.4.19",
+    "@types/ws": "catalog:",
     "drizzle-kit": "^0.31.9"
   }
 }

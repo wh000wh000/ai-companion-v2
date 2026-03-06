@@ -9,11 +9,27 @@ interface OpenRouterConfig {
   apiKey: string
   baseUrl?: string
   model?: string
+  maxTokens?: number
 }
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
+}
+
+// ─── 安全校验 ──────────────────────────────────────────────────────────────
+
+/** characterId 白名单正则：仅允许字母、数字、下划线、连字符 */
+const SAFE_CHARACTER_ID = /^[a-zA-Z0-9_-]+$/
+
+/**
+ * 校验 characterId 安全性，防止目录遍历攻击
+ * @throws Error 如果 characterId 包含非法字符
+ */
+function validateCharacterId(characterId: string): void {
+  if (!SAFE_CHARACTER_ID.test(characterId)) {
+    throw new Error(`Invalid characterId: contains disallowed characters`)
+  }
 }
 
 // ─── SOUL.md 角色缓存 ──────────────────────────────────────────────────────
@@ -23,16 +39,30 @@ const soulCache = new Map<string, string>()
 /**
  * 加载角色 SOUL.md 作为系统提示
  * 从 openclaw/agents/{characterId}/SOUL.md 读取
+ *
+ * 安全措施：
+ * 1. characterId 白名单校验 [a-zA-Z0-9_-]
+ * 2. resolve 后验证路径仍在 openclaw/agents/ 目录内
  */
 async function loadSoulPrompt(characterId: string): Promise<string> {
   if (soulCache.has(characterId)) {
     return soulCache.get(characterId)!
   }
 
+  // 安全：白名单校验
+  validateCharacterId(characterId)
+
   try {
     // 项目根目录（从 apps/server/ 向上两级）
     const projectRoot = resolve(__dirname, '..', '..', '..', '..')
-    const soulPath = resolve(projectRoot, 'openclaw', 'agents', characterId, 'SOUL.md')
+    const agentsDir = resolve(projectRoot, 'openclaw', 'agents')
+    const soulPath = resolve(agentsDir, characterId, 'SOUL.md')
+
+    // 安全：验证 resolve 后的路径仍在 agents 目录内（防止符号链接等攻击）
+    if (!soulPath.startsWith(agentsDir)) {
+      throw new Error(`Path traversal detected for characterId: ${characterId}`)
+    }
+
     const content = await readFile(soulPath, 'utf-8')
     soulCache.set(characterId, content)
     return content
@@ -57,6 +87,7 @@ export function createOpenRouterService(config: OpenRouterConfig) {
   const logger = useLogger('openrouter').useGlobalConfig()
   const baseUrl = (config.baseUrl ?? 'https://openrouter.ai/api/v1').replace(/\/$/, '')
   const model = config.model ?? 'anthropic/claude-sonnet-4'
+  const maxTokens = config.maxTokens ?? 1024
 
   return {
     /** 检查服务是否可用（API Key 已配置） */
@@ -82,6 +113,9 @@ export function createOpenRouterService(config: OpenRouterConfig) {
         throw new Error('OPENROUTER_API_KEY not configured')
       }
 
+      // 安全：校验 characterId（即使有 systemPromptOverride 也需要校验，因为 characterId 可能被后续逻辑使用）
+      validateCharacterId(characterId)
+
       // 优先使用 DB 提供的 systemPrompt，否则从文件系统加载
       const soulPrompt = systemPromptOverride || await loadSoulPrompt(characterId)
 
@@ -104,7 +138,7 @@ export function createOpenRouterService(config: OpenRouterConfig) {
           model,
           messages,
           stream: true,
-          max_tokens: 1024,
+          max_tokens: maxTokens,
           temperature: 0.8,
         }),
       })
