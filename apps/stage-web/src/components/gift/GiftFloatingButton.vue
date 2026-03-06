@@ -22,7 +22,6 @@ const trustStore = useTrustStore()
 const walletStore = useWalletStore()
 const surpriseStore = useSurpriseStore()
 const { trustRecord, showLevelUp, levelUpInfo } = storeToRefs(trustStore)
-const { formattedBalance } = storeToRefs(walletStore)
 
 const showGiftPanel = ref(false)
 const showAnimation = ref(false)
@@ -53,12 +52,8 @@ function handleGiftSent(tierId: string, _result: unknown) {
 
   setTimeout(() => {
     showAnimation.value = false
-    // 送礼后提示零花钱增量（普通用户40%分成）
-    if (tier) {
-      const pocketGain = Math.floor(tier.cost * 10 * 0.4) // cost*10=分, *40%
-      const pocketYuan = (pocketGain / 100).toFixed(1)
-      toast.info(`角色获得 ${pocketYuan} 元零花钱`, { duration: 2000 })
-    }
+    // 送礼后温暖提示 — 不显示数字
+    toast.info('TA收到了你的心意，开心地收下了', { duration: 2500 })
   }, 2000)
 
   // 送礼后延迟检查惊喜触发条件（等待动画播放完）
@@ -139,29 +134,15 @@ function toggleTrustBar() {
         </button>
       </div>
 
-      <!-- Gift button with balance badge -->
+      <!-- Gift button — 移除余额小标签 -->
       <div relative>
-        <!-- 余额小标签 -->
-        <div
-          v-if="walletStore.wallet"
-
-          class="border border-neutral-200/60 border-solid -left-3 -top-2 dark:border-neutral-700/60"
-
-          bg="white dark:neutral-800"
-
-          text="xs neutral-600 dark:neutral-300"
-
-          absolute z-1 whitespace-nowrap rounded-full px-1.5 py-0.5 font-medium shadow-sm
-        >
-          {{ formattedBalance }}
-        </div>
         <button
           class="floating-btn gift-btn shadow-lg shadow-primary-500/30 hover:shadow-primary-500/40 hover:shadow-xl"
           bg="primary-500 hover:primary-600"
 
           transition="all duration-200"
           h-12 w-12 flex items-center justify-center rounded-full active:scale-90
-          title="送礼物"
+          title="送心意"
           @click="openGiftPanel"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">

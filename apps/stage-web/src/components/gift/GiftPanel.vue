@@ -30,6 +30,14 @@ const insufficientBalance = computed(() => {
   return tier ? balance.value < tier.cost : false
 })
 
+/** 礼物温度描述映射 — 用温暖文案替代数字 */
+const tierDescriptions: Record<string, string> = {
+  small: '一份默默的关心',
+  warm: '让TA今天更开心',
+  love: '满满的爱意',
+  forever: '最珍贵的心意',
+}
+
 onMounted(async () => {
   // 确保钱包数据已加载
   if (!walletStore.wallet) {
@@ -105,18 +113,22 @@ function close() {
           max-h-85vh sm:max-h-none
           overflow-y-auto
         >
-          <!-- Header -->
+          <!-- Header — 去商业化 -->
           <div flex items-center justify-between px-5 pt-5 pb-2>
             <h3 text="lg neutral-800 dark:neutral-100" font-bold>
-              送礼物
+              送一份心意
             </h3>
-            <div flex items-center gap-2>
-              <span text="sm neutral-500 dark:neutral-400">余额:</span>
-              <span text="sm primary-500" font-bold>{{ balance }} 爱心币</span>
-            </div>
+            <button
+              text="sm neutral-400 hover:neutral-600 dark:hover:neutral-300"
+              class="bg-transparent"
+              transition-colors
+              @click="close"
+            >
+              关闭
+            </button>
           </div>
 
-          <!-- Gift Grid -->
+          <!-- Gift Grid — 温暖描述替代数字 -->
           <div grid grid-cols-2 gap-3 px-5 py-4>
             <button
               v-for="tier in GIFT_TIERS"
@@ -135,11 +147,8 @@ function close() {
             >
               <span text="3xl" class="gift-emoji">{{ tier.emoji }}</span>
               <span text="sm neutral-800 dark:neutral-100" font-medium>{{ tier.name }}</span>
-              <div flex items-center gap-1>
-                <span text="xs primary-500" font-bold>{{ tier.cost }}</span>
-                <span text="xs neutral-400">爱心币</span>
-              </div>
-              <span text="xs neutral-400 dark:neutral-500">+{{ tier.trustGain }} 信赖值</span>
+              <!-- 温暖描述替代"消耗XX爱心币" -->
+              <span text="xs neutral-400 dark:neutral-500">{{ tierDescriptions[tier.id] || '' }}</span>
             </button>
           </div>
 
@@ -156,25 +165,26 @@ function close() {
               @click="confirmGift"
             >
               <span v-if="sending">送出中...</span>
-              <span v-else-if="insufficientBalance">余额不足</span>
-              <span v-else-if="!selectedTier">请选择礼物</span>
+              <span v-else-if="insufficientBalance">心意不够了</span>
+              <span v-else-if="!selectedTier">选一份心意吧</span>
               <span v-else>确认送出</span>
             </button>
             <!-- 错误提示 -->
             <div
               v-if="giftError"
-              text="sm red-500 dark:red-400"
+              text="sm neutral-500 dark:neutral-400"
               text-center py-1
             >
               {{ giftError }}
             </div>
+            <!-- 余额不足 — 柔和链接风格 -->
             <button
               v-if="insufficientBalance && selectedTier"
               text="sm primary-500 hover:primary-600"
               w-full py-1 transition-colors
               @click="goToCharge"
             >
-              余额不足，去充值 →
+              心意不够了？去添加一些吧
             </button>
           </div>
         </div>

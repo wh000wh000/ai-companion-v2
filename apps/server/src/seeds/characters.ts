@@ -99,6 +99,17 @@ const PRESET_CHARACTERS: PresetCharacterDef[] = [
     tagsEn: ['sunny', 'passionate', 'reliable', 'optimistic'],
     coverUrl: '/covers/alie.webp',
   },
+  {
+    id: 'preset-lingyi',
+    slug: 'lingyi',
+    nameZh: '谢令仪',
+    nameEn: 'Xie Lingyi',
+    descriptionZh: '17岁的她，安静得像一本还没翻开的书。喜欢历史，话不多，但每一句都值得认真听。',
+    descriptionEn: 'A quiet 17-year-old who reads like she\'s searching for something. She speaks little, but every word carries weight.',
+    tagsZh: ['沉静', '早慧', '历史', '成长'],
+    tagsEn: ['quiet', 'precocious', 'history', 'growing'],
+    coverUrl: '/covers/lingyi.webp',
+  },
 ]
 
 // ─── SOUL.md 加载 ──────────────────────────────────────────────────────────
@@ -121,7 +132,7 @@ async function loadSoulMd(slug: string): Promise<string> {
  *
  * 职责：
  * 1. 确保 __system__ 用户存在（作为预置角色的 owner）
- * 2. 插入 6 个角色到 characters 表
+ * 2. 插入 7 个角色到 characters 表
  * 3. 插入中英文 i18n 数据
  * 4. 插入 SOUL.md 作为 systemPrompt 到 characterPrompts 表
  *

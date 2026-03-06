@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { SurpriseRecord } from './stores/surprise'
 
+import type { NarrativeType } from './stores/narrative'
+
 import { OnboardingDialog, ToasterRoot } from '@proj-airi/stage-ui/components'
 import { useSharedAnalyticsStore } from '@proj-airi/stage-ui/stores/analytics'
 import { useCharacterOrchestratorStore } from '@proj-airi/stage-ui/stores/character'
@@ -19,12 +21,15 @@ import { useI18n } from 'vue-i18n'
 import { RouterView } from 'vue-router'
 import { toast, Toaster } from 'vue-sonner'
 
+import HandwrittenCard from './components/narrative/HandwrittenCard.vue'
+import NarrativePayment from './components/narrative/NarrativePayment.vue'
 import PerformanceOverlay from './components/Devtools/PerformanceOverlay.vue'
 import SurpriseAnimation from './components/surprise/SurpriseAnimation.vue'
 
 import { useAgentPush } from './composables/useAgentPush'
 import { useAutoProviderSetup } from './composables/useAutoProviderSetup'
 import { useCharacterLoader } from './composables/useCharacterLoader'
+import { useNarrativeStore } from './stores/narrative'
 import { usePWAStore } from './stores/pwa'
 import { useSurpriseStore } from './stores/surprise'
 
@@ -35,6 +40,9 @@ useAutoProviderSetup()
 
 // 惊喜 store：用于 WebSocket 推送触发开箱动画
 const surpriseStore = useSurpriseStore()
+
+// 叙事支付 store：全局手写卡片和支付确认入口
+const narrativeStore = useNarrativeStore()
 
 // 角色人格加载器：从服务器获取预置角色并注入 systemPrompt
 const characterLoader = useCharacterLoader()
@@ -182,6 +190,32 @@ function handleSetupSkipped() {
     v-if="surpriseStore.pendingSurprise"
     v-model:show="surpriseStore.showAnimation"
     :surprise="surpriseStore.pendingSurprise"
+  />
+
+  <!-- 全局叙事手写卡片（情感节奏系统触发） -->
+  <HandwrittenCard
+    v-if="narrativeStore.pendingCard"
+    :show="!!narrativeStore.pendingCard"
+    :message="narrativeStore.pendingCard.message"
+    :action-text="narrativeStore.pendingCard.actionText"
+    :character-name="narrativeStore.pendingCard.characterName"
+    @action="narrativeStore.showPaymentSheet = true"
+    @dismiss="narrativeStore.dismiss()"
+  />
+
+  <!-- 全局叙事支付确认（HandwrittenCard 行动后展示） -->
+  <NarrativePayment
+    v-if="narrativeStore.showPaymentSheet && narrativeStore.pendingCard"
+    :show="narrativeStore.showPaymentSheet"
+    :type="(narrativeStore.pendingCard.paymentData.type as NarrativeType) || 'gift'"
+    :character-name="narrativeStore.pendingCard.characterName"
+    :character-quote="narrativeStore.pendingCard.paymentData.characterQuote || ''"
+    :item-emoji="narrativeStore.pendingCard.paymentData.itemEmoji || ''"
+    :item-name="narrativeStore.pendingCard.paymentData.storyTitle || ''"
+    :item-description="narrativeStore.pendingCard.paymentData.storyDescription || ''"
+    :amount="(narrativeStore.pendingCard.paymentData.amountCents || 0) / 100"
+    @confirm="narrativeStore.confirmPayment()"
+    @close="narrativeStore.showPaymentSheet = false"
   />
 </template>
 

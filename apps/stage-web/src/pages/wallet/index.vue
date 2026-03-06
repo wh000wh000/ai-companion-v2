@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Button } from '@proj-airi/ui'
 import { storeToRefs } from 'pinia'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -68,7 +67,7 @@ onUnmounted(() => {
 
 function getTypeIcon(type: string) {
   const icons: Record<string, string> = {
-    charge: 'i-lucide-arrow-up-circle',
+    charge: 'i-lucide-feather',
     gift: 'i-lucide-heart',
     surprise: 'i-lucide-sparkles',
     subscription: 'i-lucide-plus-circle',
@@ -78,22 +77,34 @@ function getTypeIcon(type: string) {
 
 function getTypeColor(type: string) {
   const colors: Record<string, string> = {
-    charge: 'text-green-500',
-    gift: 'text-pink-500',
-    surprise: 'text-amber-500',
-    subscription: 'text-blue-500',
+    charge: 'text-blue-400',
+    gift: 'text-pink-400',
+    surprise: 'text-amber-400',
+    subscription: 'text-violet-400',
   }
-  return colors[type] || 'text-neutral-500'
+  return colors[type] || 'text-neutral-400'
 }
 
-function formatAmount(tx: { type: string, amount: number, coins?: number }) {
-  // 充值: 显示获得的爱心币数; 其他: 显示消耗的爱心币数
+/** 将交易记录转化为叙事风格描述 */
+function narrativeDescription(tx: { type: string, description: string }) {
   if (tx.type === 'charge') {
-    const display = tx.coins ?? tx.amount
-    return `+${display.toLocaleString('zh-CN')}`
+    return '添加了一份心意'
   }
-  const display = tx.coins ?? tx.amount
-  return `-${display.toLocaleString('zh-CN')}`
+  if (tx.type === 'gift') {
+    // description 通常是 "送礼: XXX" 之类，尝试提取礼物名
+    const match = tx.description.match(/送礼[:：]?\s*(.+)/)
+    if (match) {
+      return `送出了一份${match[1].trim()}`
+    }
+    return '送出了一份心意'
+  }
+  if (tx.type === 'surprise') {
+    return 'TA用零花钱为你准备了惊喜'
+  }
+  if (tx.type === 'subscription') {
+    return '开通了陪伴计划'
+  }
+  return tx.description
 }
 
 function formatDate(dateStr: string) {
@@ -113,7 +124,7 @@ function formatDate(dateStr: string) {
       >
         <div i-lucide-arrow-left text="lg neutral-600 dark:neutral-300" />
       </button>
-      <span text="xl neutral-800 dark:neutral-100" font-bold>我的钱包</span>
+      <span text="xl neutral-800 dark:neutral-100" font-bold>心意空间</span>
     </div>
 
     <!-- Loading -->
@@ -122,100 +133,99 @@ function formatDate(dateStr: string) {
     </div>
 
     <template v-else-if="wallet">
-      <!-- Balance Card -->
+      <!-- 心意卡片 — 柔和展示，弱化数字 -->
       <div
         rounded-2xl p-6
-        class="border-2 border-pink-200/30 border-solid from-pink-500/15 to-purple-500/15 bg-gradient-to-br dark:border-pink-800/30 dark:from-pink-700/25 dark:to-purple-700/25"
+        class="border border-neutral-200/20 border-solid from-pink-500/8 to-purple-500/8 bg-gradient-to-br dark:border-neutral-700/20 dark:from-pink-700/12 dark:to-purple-700/12"
       >
-        <div text="sm neutral-500 dark:neutral-400" mb-1>
-          爱心币余额
+        <div text="sm neutral-400 dark:neutral-500" mb-2>
+          你的心意储备
         </div>
-        <!-- G11: 使用CountUp动画值显示余额 -->
-        <div text="4xl pink-600 dark:pink-300" font-bold tracking-tight>
+        <!-- G11: 使用CountUp动画值，小号字体柔和展示 -->
+        <div text="2xl neutral-600 dark:neutral-300" font-medium tracking-tight>
           {{ displayBalance.toLocaleString('zh-CN') }}
         </div>
         <div flex="~ items-center gap-4" mt-4>
           <div flex="~ col">
-            <span text="xs neutral-400 dark:neutral-500">零花钱</span>
-            <span text="lg neutral-700 dark:neutral-200" font-semibold>
+            <span text="xs neutral-400 dark:neutral-500">TA的零花钱</span>
+            <span text="sm neutral-600 dark:neutral-300" font-medium>
               {{ formattedPocketMoney }}元
             </span>
           </div>
           <div
             v-if="wallet.subscriptionTier !== 'none'"
             rounded-full px-3 py-1
-            class="bg-blue-500/15 dark:bg-blue-700/25"
-            text="xs blue-600 dark:blue-300"
+            class="bg-violet-500/10 dark:bg-violet-700/15"
+            text="xs violet-500 dark:violet-400"
             font-medium
           >
             {{ subscriptionLabel }}
           </div>
         </div>
 
-        <!-- First Charge Banner -->
+        <!-- 首次心意提示 — 温暖而非促销 -->
         <div
           v-if="wallet.isFirstCharge"
           mt-4 rounded-xl p-3
-          class="border border-amber-300/30 border-solid bg-amber-500/10 dark:border-amber-700/30 dark:bg-amber-700/20"
+          class="bg-neutral-100/60 dark:bg-neutral-800/40"
           flex="~ items-center gap-2"
         >
-          <div i-lucide-gift text-lg text-amber-500 />
-          <span text="sm amber-700 dark:amber-300" font-medium>
-            首充翻倍！任意档位爱心币 x2
+          <div i-lucide-sparkles text-lg text-neutral-400 />
+          <span text="sm neutral-500 dark:neutral-400">
+            第一次心意，我们会加倍珍惜
           </span>
         </div>
       </div>
 
-      <!-- G26: 余额为0时显示引导卡片 -->
+      <!-- 余额为0时的温暖引导 -->
       <div
         v-if="wallet.coinBalance === 0"
         flex="~ col items-center gap-3"
         rounded-xl p-5
-        class="border border-pink-200/30 border-dashed border-solid from-pink-500/5 to-purple-500/5 bg-gradient-to-br dark:border-pink-700/30 dark:from-pink-700/10 dark:to-purple-700/10"
+        class="bg-neutral-50/50 dark:bg-neutral-800/30"
       >
-        <div text-4xl>
-          💝
-        </div>
-        <span text="sm neutral-600 dark:neutral-300" text-center font-medium>
-          充值获得爱心币，送礼给角色吧
+        <span text="sm neutral-500 dark:neutral-400" text-center>
+          还没有心意储备，为TA添加一些吧
         </span>
-        <Button
-          variant="primary"
-          size="md"
-          icon="i-lucide-coins"
-          label="去充值"
+        <span
+          text="sm primary-500 hover:primary-600"
+          cursor-pointer transition-colors
           @click="router.push('/wallet/charge')"
-        />
+        >
+          添加心意
+        </span>
       </div>
 
-      <!-- Quick Actions -->
-      <div flex="~ gap-3">
-        <Button
-          variant="primary"
-          block
-          size="lg"
-          icon="i-lucide-coins"
-          label="充值"
+      <!-- 操作区 — 柔和链接风格 -->
+      <div flex="~ gap-6 justify-center" py-2>
+        <span
+          text="sm primary-500 hover:primary-600"
+          cursor-pointer transition-colors
+          flex="~ items-center gap-1"
           @click="router.push('/wallet/charge')"
-        />
-        <Button
-          variant="secondary"
-          block
-          size="lg"
-          icon="i-lucide-scroll-text"
-          label="全部记录"
+        >
+          <div i-lucide-plus text-xs />
+          添加心意
+        </span>
+        <span
+          text="sm neutral-400 hover:neutral-600 dark:hover:neutral-300"
+          cursor-pointer transition-colors
+          flex="~ items-center gap-1"
           @click="router.push('/wallet/history')"
-        />
+        >
+          <div i-lucide-scroll-text text-xs />
+          心意足迹
+        </span>
       </div>
 
-      <!-- Recent Transactions -->
+      <!-- 心意足迹 — 叙事风格 -->
       <div flex="~ col gap-3">
-        <div text="lg neutral-800 dark:neutral-100" font-semibold>
-          最近交易
+        <div text="sm neutral-500 dark:neutral-400" font-medium>
+          心意足迹
         </div>
 
         <div v-if="recentTransactions.length === 0" text="sm neutral-400 dark:neutral-500" py-6 text-center>
-          暂无交易记录
+          还没有足迹，去送一份心意吧
         </div>
 
         <div
@@ -223,35 +233,28 @@ function formatDate(dateStr: string) {
           :key="tx.id"
           flex="~ items-center gap-3"
           rounded-xl p-3
-          class="border border-neutral-200/30 border-solid bg-neutral-50/50 dark:border-neutral-700/30 dark:bg-neutral-800/50"
+          class="bg-neutral-50/30 dark:bg-neutral-800/30"
         >
           <div
-
-            h-10 w-10 flex items-center justify-center rounded-full
-            class="bg-neutral-100 dark:bg-neutral-700/50"
+            h-9 w-9 flex items-center justify-center rounded-full
+            class="bg-neutral-100/60 dark:bg-neutral-700/30"
           >
-            <div :class="[getTypeIcon(tx.type), getTypeColor(tx.type)]" text-lg />
+            <div :class="[getTypeIcon(tx.type), getTypeColor(tx.type)]" text-base />
           </div>
           <div flex="~ 1 col">
-            <span text="sm neutral-800 dark:neutral-200" font-medium>
-              {{ tx.description }}
+            <span text="sm neutral-700 dark:neutral-300">
+              {{ narrativeDescription(tx) }}
             </span>
             <span text="xs neutral-400 dark:neutral-500">
               {{ formatDate(tx.createdAt) }}
             </span>
           </div>
-          <span
-            text="sm font-semibold"
-            :class="tx.type === 'charge' ? 'text-green-500' : 'text-pink-500'"
-          >
-            {{ formatAmount(tx) }}
-          </span>
         </div>
       </div>
     </template>
 
     <!-- Error -->
-    <div v-else text="sm red-500" py-10 text-center>
+    <div v-else text="sm neutral-400" py-10 text-center>
       加载失败，请刷新重试
     </div>
 

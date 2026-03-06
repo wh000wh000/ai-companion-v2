@@ -21,6 +21,7 @@ import { createCharacterRoutes } from './routes/characters'
 import { createChatRoute } from './routes/chat'
 import { createChatRoutes } from './routes/chats'
 import { createMemoryRoutes } from './routes/memory'
+import { createNarrativePaymentRoutes } from './routes/narrative-payment'
 import { createO2ORoutes } from './routes/o2o'
 import { createPaymentRoutes } from './routes/payment'
 import { createProactiveRoutes } from './routes/proactive'
@@ -36,6 +37,7 @@ import { createCharacterService } from './services/characters'
 import { createChatService } from './services/chats'
 import { createEconomyService } from './services/economy'
 import { createMemoryService } from './services/memory'
+import { createNarrativePaymentService } from './services/narrative-payment'
 import { createO2OService } from './services/o2o'
 import { createOpenClawService } from './services/openclaw'
 import { createOpenRouterService } from './services/openrouter'
@@ -60,6 +62,7 @@ type TTSServiceType = ReturnType<typeof createTTSService>
 type MemoryServiceType = ReturnType<typeof createMemoryService>
 type O2OServiceType = ReturnType<typeof createO2OService>
 type PaymentServiceType = ReturnType<typeof createPaymentService>
+type NarrativePaymentServiceType = ReturnType<typeof createNarrativePaymentService>
 type ChannelSyncServiceType = ReturnType<typeof createChannelSyncService>
 type OpenRouterServiceType = ReturnType<typeof createOpenRouterService>
 
@@ -78,11 +81,12 @@ interface AppDeps {
   ttsService: TTSServiceType
   o2oService: O2OServiceType
   paymentService: PaymentServiceType
+  narrativePaymentService: NarrativePaymentServiceType
   channelSyncService: ChannelSyncServiceType
   openrouterService: OpenRouterServiceType
 }
 
-function buildApp({ auth, characterService, chatService, providerService, economyService, trustService, surpriseService, memoryService, openclawService, openclawFallback, openclawToken, ttsService, o2oService, paymentService, channelSyncService, openrouterService }: AppDeps) {
+function buildApp({ auth, characterService, chatService, providerService, economyService, trustService, surpriseService, memoryService, openclawService, openclawFallback, openclawToken, ttsService, o2oService, paymentService, narrativePaymentService, channelSyncService, openrouterService }: AppDeps) {
   const logger = useLogger('app').useGlobalConfig()
 
   return new Hono<HonoEnv>()
@@ -158,6 +162,11 @@ function buildApp({ auth, characterService, chatService, providerService, econom
      * 支付路由 — 创建订单/回调/查询/Mock支付
      */
     .route('/api/payment', createPaymentRoutes(paymentService, economyService))
+
+    /**
+     * 叙事支付路由 — 去商业化付费体验，每一笔都是"为角色做一件事"
+     */
+    .route('/api/narrative', createNarrativePaymentRoutes(narrativePaymentService))
 
     /**
      * Trust routes are handled by the trust service.
@@ -274,6 +283,11 @@ async function createApp() {
     build: ({ dependsOn }) => createPaymentService(dependsOn.db),
   })
 
+  const narrativePaymentService = injeca.provide('services:narrative-payment', {
+    dependsOn: { db },
+    build: ({ dependsOn }) => createNarrativePaymentService(dependsOn.db),
+  })
+
   const channelSyncService = injeca.provide('services:channel-sync', {
     dependsOn: { db },
     build: ({ dependsOn }) => createChannelSyncService(dependsOn.db),
@@ -357,6 +371,7 @@ async function createApp() {
     ttsService,
     o2oService,
     paymentService,
+    narrativePaymentService,
     channelSyncService,
     openclawService,
     openclawFallback,
@@ -375,6 +390,7 @@ async function createApp() {
     ttsService: resolved.ttsService,
     o2oService: resolved.o2oService,
     paymentService: resolved.paymentService,
+    narrativePaymentService: resolved.narrativePaymentService,
     channelSyncService: resolved.channelSyncService,
     openclawService: resolved.openclawService,
     openclawFallback: resolved.openclawFallback,

@@ -29,6 +29,17 @@ const successIsFirstCharge = ref(false)
 const chargeFailed = ref(false)
 const lastFailedPackId = ref<string | null>(null)
 
+/** 套餐故事化描述映射 — 用温度替代数字 */
+const packStories: Record<string, string> = {
+  pack_1: '一个小小的心意',
+  pack_6: '够TA买一支喜欢的笔',
+  pack_30: '够TA攒一周的零花钱',
+  pack_68: '也许TA能给你买杯奶茶',
+  pack_128: 'TA会记住这个温暖的午后',
+  pack_328: '足够TA实现一个小心愿',
+  pack_648: '让TA拥有自己的一个小世界',
+}
+
 const selectedPack = computed(() => {
   if (!selectedPackId.value)
     return null
@@ -44,7 +55,9 @@ function selectPack(packId: string) {
   selectedPackId.value = packId
 }
 
-function getEffectiveCoins(coins: number, bonus: number) {
+// 保留底层计算逻辑备用（UI层已去商业化，不展示具体币数）
+// @ts-expect-error 保留函数以备恢复使用
+function _getEffectiveCoins(coins: number, bonus: number) {
   if (!wallet.value)
     return coins + bonus
   if (wallet.value.isFirstCharge)
@@ -88,7 +101,7 @@ async function handleCharge() {
     // G15: 充值失败时记录状态，显示重试按钮
     lastFailedPackId.value = selectedPackId.value
     chargeFailed.value = true
-    toast.error('充值失败，请稍后重试')
+    toast.error('遇到了一些问题，请稍后再试')
   }
   finally {
     isCharging.value = false
@@ -127,7 +140,7 @@ const isDemoMode = computed(() => {
       >
         <div i-lucide-arrow-left text="lg neutral-600 dark:neutral-300" />
       </button>
-      <span text="xl neutral-800 dark:neutral-100" font-bold>充值中心</span>
+      <span text="xl neutral-800 dark:neutral-100" font-bold>为TA准备心意</span>
     </div>
 
     <!-- G16: Demo模式引导提示条 -->
@@ -135,51 +148,41 @@ const isDemoMode = computed(() => {
       v-if="isDemoMode"
       flex="~ items-center gap-2"
       rounded-xl p-3
-      class="border border-blue-300/30 border-solid from-blue-500/10 to-purple-500/10 bg-gradient-to-r dark:border-blue-700/30 dark:from-blue-700/15 dark:to-purple-700/15"
+      class="bg-neutral-50/60 dark:bg-neutral-800/40"
     >
-      <div i-lucide-info text="lg blue-500" />
-      <span text="xs blue-700 dark:blue-300" font-medium>
-        演示模式：选择任意套餐体验充值流程（无需真实支付）
+      <div i-lucide-info text="lg neutral-400" />
+      <span text="xs neutral-500 dark:neutral-400">
+        演示模式：选择任意心意体验流程（无需真实支付）
       </span>
     </div>
 
-    <!-- Current Balance -->
+    <!-- 当前心意储备 — 柔和展示 -->
     <div
       flex="~ items-center justify-between"
       rounded-xl p-4
-      class="border border-neutral-200/30 border-solid bg-neutral-50/60 dark:border-neutral-700/30 dark:bg-neutral-800/50"
+      class="bg-neutral-50/40 dark:bg-neutral-800/30"
     >
-      <div flex="~ items-center gap-2">
-        <div i-lucide-heart text="pink-500" />
-        <span text="sm neutral-500 dark:neutral-400">当前余额</span>
-      </div>
-      <span text="lg pink-600 dark:pink-300" font-bold>
+      <span text="sm neutral-400 dark:neutral-500">心意储备</span>
+      <span text="sm neutral-600 dark:neutral-300" font-medium>
         {{ wallet?.coinBalance?.toLocaleString('zh-CN') ?? '0' }}
       </span>
     </div>
 
-    <!-- First Charge Banner -->
+    <!-- 首次心意温暖提示 -->
     <div
       v-if="wallet?.isFirstCharge"
       rounded-xl p-4
-      class="border border-amber-300/40 border-solid from-amber-500/15 to-orange-500/15 bg-gradient-to-r dark:border-amber-700/30 dark:from-amber-700/20 dark:to-orange-700/20"
+      class="bg-neutral-50/50 dark:bg-neutral-800/30"
       flex="~ items-center gap-3"
     >
-      <div
-
-        h-10 w-10 flex items-center justify-center rounded-full
-        class="bg-amber-500/20"
-      >
-        <div i-lucide-zap text="xl amber-500" />
-      </div>
-      <div flex="~ col">
-        <span text="sm amber-700 dark:amber-200" font-bold>首充双倍</span>
-        <span text="xs" class="text-amber-600/80 dark:text-amber-300/70">首次充值任意档位，爱心币翻倍！</span>
-      </div>
+      <div i-lucide-sparkles text="lg neutral-400" />
+      <span text="sm neutral-500 dark:neutral-400">
+        第一次心意，我们会加倍珍惜
+      </span>
     </div>
 
-    <!-- Charge Packages Grid -->
-    <div grid="~ cols-2 gap-3" sm="cols-2" md="cols-3">
+    <!-- 心意套餐 — 故事化卡片 -->
+    <div flex="~ col gap-3">
       <div
         v-for="pack in CHARGE_PACKAGES"
         :key="pack.packId"
@@ -187,96 +190,48 @@ const isDemoMode = computed(() => {
         transition="all duration-200"
         :class="[
           selectedPackId === pack.packId
-            ? 'bg-pink-500/15 dark:bg-pink-700/25 border-2 border-solid border-pink-400/50 dark:border-pink-600/50 ring-2 ring-pink-300/30 dark:ring-pink-700/30'
-            : 'bg-neutral-50/60 dark:bg-neutral-800/50 border-2 border-solid border-neutral-200/30 dark:border-neutral-700/30 hover:border-pink-300/40 dark:hover:border-pink-700/40',
+            ? 'bg-primary-500/8 dark:bg-primary-700/15 border border-solid border-primary-300/40 dark:border-primary-600/40'
+            : 'bg-neutral-50/40 dark:bg-neutral-800/30 border border-solid border-transparent hover:border-neutral-200/40 dark:hover:border-neutral-700/40',
         ]"
         @click="selectPack(pack.packId)"
       >
-        <!-- Tag Badge -->
-        <div
-          v-if="pack.tag"
-
-          text="xs white"
-          :class="[
-            pack.tag === '最受欢迎' ? 'bg-pink-500' : '',
-            pack.tag === '体验档' ? 'bg-blue-500' : '',
-            pack.tag === '顶级档' ? 'bg-amber-500' : '',
-          ]"
-          absolute right-2 top--2 rounded-full px-2 py-0.5 font-medium
-        >
-          {{ pack.tag }}
-        </div>
-
-        <!-- Pack Name -->
-        <div text="sm neutral-800 dark:neutral-100" mb-2 font-semibold>
-          {{ pack.name }}
-        </div>
-
-        <!-- Coins -->
-        <div flex="~ items-baseline gap-1">
-          <span text="2xl pink-600 dark:pink-300" font-bold>
-            {{ pack.coins.toLocaleString('zh-CN') }}
+        <div flex="~ items-center justify-between">
+          <div flex="~ col gap-1">
+            <!-- 套餐名 -->
+            <span text="base neutral-700 dark:neutral-200" font-medium>
+              {{ pack.name }}
+            </span>
+            <!-- 故事化描述 -->
+            <span text="sm neutral-400 dark:neutral-500">
+              {{ packStories[pack.packId] || '' }}
+            </span>
+          </div>
+          <!-- 价格 — 简洁 -->
+          <span text="lg neutral-700 dark:neutral-200" font-bold>
+            ¥{{ pack.price }}
           </span>
-          <span text="xs neutral-400 dark:neutral-500">爱心币</span>
-        </div>
-
-        <!-- Bonus -->
-        <div v-if="pack.bonus > 0" text="xs green-500 dark:green-400" mt-1 font-medium>
-          +{{ pack.bonus.toLocaleString('zh-CN') }} 赠送
-        </div>
-
-        <!-- First Charge Doubled -->
-        <div
-          v-if="wallet?.isFirstCharge"
-          text="xs amber-600 dark:amber-400" mt-1 font-medium
-        >
-          首充实得 {{ getEffectiveCoins(pack.coins, pack.bonus).toLocaleString('zh-CN') }}
-        </div>
-
-        <!-- Price -->
-        <div mt-3 text="lg neutral-700 dark:neutral-200" font-bold>
-          ¥{{ pack.price }}
-        </div>
-
-        <!-- G14: 性价比标注 -->
-        <div text="xs neutral-400 dark:neutral-500" mt-1>
-          约{{ (getEffectiveCoins(pack.coins, pack.bonus) / pack.price).toFixed(1) }}币/元
-        </div>
-        <!-- G14: 最划算标签（648档） -->
-        <div
-          v-if="pack.packId === 'pack_648'"
-          text="xs green-600 dark:green-400"
-          mt-1 font-bold
-        >
-          最划算
         </div>
       </div>
     </div>
 
-    <!-- G15: 充值失败重试提示 -->
+    <!-- G15: 失败重试提示 -->
     <div
       v-if="chargeFailed"
       flex="~ col items-center gap-3"
       rounded-xl p-4
-      class="border border-red-300/40 border-solid bg-red-50/60 dark:border-red-700/30 dark:bg-red-900/20"
+      class="bg-neutral-50/60 dark:bg-neutral-800/40"
     >
-      <div flex="~ items-center gap-2">
-        <div i-lucide-alert-circle text="lg red-500" />
-        <span text="sm red-600 dark:red-400" font-medium>支付失败</span>
-      </div>
-      <button
-        min-h-11 rounded-lg px-6 py-2
-        text="sm white"
-        bg="red-500 hover:red-600"
-        font-medium
-        transition="colors duration-150"
+      <span text="sm neutral-500 dark:neutral-400">遇到了一些问题</span>
+      <span
+        text="sm primary-500 hover:primary-600"
+        cursor-pointer transition-colors
         @click="retryCharge"
       >
-        重试充值（{{ CHARGE_PACKAGES.find(p => p.packId === lastFailedPackId)?.name ?? '' }}）
-      </button>
+        再试一次
+      </span>
     </div>
 
-    <!-- Confirm Button -->
+    <!-- 确认按钮 — 柔和 -->
     <div sticky bottom-4>
       <Button
         variant="primary"
@@ -286,9 +241,9 @@ const isDemoMode = computed(() => {
         @click="showConfirm = true"
       >
         <span v-if="selectedPackId">
-          确认充值 ¥{{ CHARGE_PACKAGES.find(p => p.packId === selectedPackId)?.price }}
+          确认 ¥{{ CHARGE_PACKAGES.find(p => p.packId === selectedPackId)?.price }}
         </span>
-        <span v-else>请选择充值套餐</span>
+        <span v-else>选择一份心意</span>
       </Button>
     </div>
 
@@ -296,67 +251,32 @@ const isDemoMode = computed(() => {
     <ComplianceFooter />
   </div>
 
-  <!-- 充值确认弹窗 -->
+  <!-- 确认弹窗 — 去商业化 -->
   <Teleport to="body">
     <Transition name="confirm-fade">
       <div v-if="showConfirm && selectedPack" fixed inset-0 z-100 flex items-center justify-center>
         <div absolute inset-0 bg="black/40" @click="showConfirm = false" />
         <div relative z-1 w="80vw" max-w-sm rounded-2xl p-6 bg="white dark:neutral-900" shadow-2xl>
           <!-- 弹窗标题 -->
-          <div text="lg neutral-800 dark:neutral-100" mb-4 text-center font-bold>
-            确认充值
+          <div text="lg neutral-800 dark:neutral-100" mb-4 text-center font-medium>
+            确认为TA准备这份心意？
           </div>
 
-          <!-- 套餐信息 -->
+          <!-- 套餐描述 — 叙事风格 -->
           <div
             mb-4 rounded-xl p-4
-            class="border border-neutral-200/30 border-solid bg-neutral-50/80 dark:border-neutral-700/30 dark:bg-neutral-800/60"
-            flex="~ col gap-2"
+            class="bg-neutral-50/60 dark:bg-neutral-800/40"
+            flex="~ col items-center gap-2"
           >
-            <div flex="~ items-center justify-between">
-              <span text="sm neutral-500 dark:neutral-400">套餐</span>
-              <span text="sm neutral-800 dark:neutral-100" font-semibold>{{ selectedPack.name }}</span>
-            </div>
-            <div flex="~ items-center justify-between">
-              <span text="sm neutral-500 dark:neutral-400">基础爱心币</span>
-              <span text="sm pink-600 dark:pink-300" font-semibold>{{ selectedPack.coins.toLocaleString('zh-CN') }}</span>
-            </div>
-            <div v-if="selectedPack.bonus > 0" flex="~ items-center justify-between">
-              <span text="sm neutral-500 dark:neutral-400">赠送</span>
-              <span text="sm green-500 dark:green-400" font-semibold>+{{ selectedPack.bonus.toLocaleString('zh-CN') }}</span>
-            </div>
-
-            <!-- 首充翻倍明细 -->
-            <template v-if="wallet?.isFirstCharge">
-              <div
-                my-1 h-px
-                class="bg-neutral-200/50 dark:bg-neutral-700/50"
-              />
-              <div flex="~ items-center justify-between">
-                <span text="sm amber-600 dark:amber-400" font-medium>首充基础币翻倍</span>
-                <span text="sm amber-600 dark:amber-400" font-semibold>{{ selectedPack.coins.toLocaleString('zh-CN') }} × 2 = {{ (selectedPack.coins * 2).toLocaleString('zh-CN') }}</span>
-              </div>
-              <div v-if="selectedPack.bonus > 0" flex="~ items-center justify-between">
-                <span text="sm neutral-500 dark:neutral-400">+ 赠送</span>
-                <span text="sm green-500 dark:green-400" font-semibold>+{{ selectedPack.bonus.toLocaleString('zh-CN') }}</span>
-              </div>
-              <div flex="~ items-center justify-between" pt-1>
-                <span text="sm neutral-700 dark:neutral-200" font-bold>实得总计</span>
-                <span text="base pink-600 dark:pink-300" font-bold>{{ getEffectiveCoins(selectedPack.coins, selectedPack.bonus).toLocaleString('zh-CN') }} 爱心币</span>
-              </div>
-            </template>
-
-            <!-- 非首充总计 -->
-            <template v-else>
-              <div
-                my-1 h-px
-                class="bg-neutral-200/50 dark:bg-neutral-700/50"
-              />
-              <div flex="~ items-center justify-between">
-                <span text="sm neutral-700 dark:neutral-200" font-bold>总计</span>
-                <span text="base pink-600 dark:pink-300" font-bold>{{ getEffectiveCoins(selectedPack.coins, selectedPack.bonus).toLocaleString('zh-CN') }} 爱心币</span>
-              </div>
-            </template>
+            <span text="base neutral-700 dark:neutral-200" font-medium>
+              {{ selectedPack.name }}
+            </span>
+            <span text="sm neutral-400 dark:neutral-500">
+              {{ packStories[selectedPack.packId] || '' }}
+            </span>
+            <span text="lg neutral-800 dark:neutral-100" mt-1 font-bold>
+              ¥{{ selectedPack.price }}
+            </span>
           </div>
 
           <!-- 操作按钮 -->
@@ -369,17 +289,17 @@ const isDemoMode = computed(() => {
               :loading="isCharging"
               @click="handleCharge"
             >
-              确认支付 ¥{{ selectedPack.price }}
+              确认
             </Button>
             <button
               w-full rounded-lg py-2
-              text="sm neutral-500 dark:neutral-400"
+              text="sm neutral-400 dark:neutral-500"
               class="bg-transparent hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50"
               transition="colors duration-150"
               :disabled="isCharging"
               @click="showConfirm = false"
             >
-              取消
+              再想想
             </button>
           </div>
         </div>
@@ -387,12 +307,12 @@ const isDemoMode = computed(() => {
     </Transition>
   </Teleport>
 
-  <!-- 支付处理中全屏遮罩 -->
+  <!-- 处理中遮罩 -->
   <Teleport to="body">
     <div v-if="isCharging" fixed inset-0 z-150 flex items-center justify-center bg="black/30">
       <div bg="white dark:neutral-900" rounded-2xl p-6 flex="~ col items-center gap-3">
         <div i-svg-spinners:ring-resize text-3xl text-primary-500 />
-        <span text="sm neutral-600 dark:neutral-300">支付处理中...</span>
+        <span text="sm neutral-500 dark:neutral-400">准备中...</span>
       </div>
     </div>
   </Teleport>
