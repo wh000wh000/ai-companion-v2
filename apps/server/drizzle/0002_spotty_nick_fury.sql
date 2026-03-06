@@ -30,8 +30,4 @@ CREATE TABLE "memory_moments" (
 );
 --> statement-breakpoint
 ALTER TABLE "narrative_payments" ADD CONSTRAINT "narrative_payments_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "memory_moments" ADD CONSTRAINT "memory_moments_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "narrative_payments_user_idx" ON "narrative_payments" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "narrative_payments_character_idx" ON "narrative_payments" USING btree ("character_id");--> statement-breakpoint
-CREATE INDEX "memory_moments_user_idx" ON "memory_moments" USING btree ("user_id");--> statement-breakpoint
-CREATE INDEX "memory_moments_character_idx" ON "memory_moments" USING btree ("character_id");
+ALTER TABLE "memory_moments" ADD CONSTRAINT "memory_moments_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
